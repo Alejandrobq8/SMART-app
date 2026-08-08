@@ -524,42 +524,48 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
       </Card>
 
       <Card title="Crear expediente de estudiante">
-        <form action={createStudentProfile} className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className="block text-xs text-slate-500">Usuario (estudiante)</label>
-            <select name="userId" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
-              {usersWithoutProfile.map((u) => (
-                <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Carné</label>
-            <input type="text" name="studentCode" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-28" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Carrera</label>
-            <input type="text" name="career" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Proceso</label>
-            <select name="processType" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
-              <option value="PRACTICE">Práctica profesional</option>
-              <option value="TCU">TCU</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Horas requeridas</label>
-            <input type="number" name="requiredHours" defaultValue={150} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
-          </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-            Crear
-          </button>
-        </form>
-        {usersWithoutProfile.length === 0 && (
-          <p className="text-xs text-slate-400 mt-2">
-            Todos los usuarios con rol estudiante ya tienen expediente. Crea uno nuevo desde Administración.
+        {usersWithoutProfile.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            No hay usuarios con rol <strong>Estudiante</strong> pendientes de expediente. Todos
+            los estudiantes registrados ya tienen uno, o aún no has creado ninguna cuenta de
+            estudiante desde <strong>Administración de usuarios</strong>.
           </p>
+        ) : (
+          <form action={createStudentProfile} className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="block text-xs text-slate-500">Usuario (estudiante)</label>
+              <select name="userId" required defaultValue="" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                <option value="" disabled>
+                  Selecciona un estudiante
+                </option>
+                {usersWithoutProfile.map((u) => (
+                  <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Carné</label>
+              <input type="text" name="studentCode" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-28" />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Carrera</label>
+              <input type="text" name="career" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Proceso</label>
+              <select name="processType" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                <option value="PRACTICE">Práctica profesional</option>
+                <option value="TCU">TCU</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Horas requeridas</label>
+              <input type="number" name="requiredHours" defaultValue={150} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
+            </div>
+            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+              Crear
+            </button>
+          </form>
         )}
       </Card>
 
