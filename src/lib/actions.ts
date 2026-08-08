@@ -204,6 +204,17 @@ export async function assignStudent(formData: FormData) {
   const advisorId = String(formData.get("advisorId") ?? "");
   const organizationId = String(formData.get("organizationId") ?? "");
 
+  const current = await prisma.studentProfile.findUniqueOrThrow({
+    where: { id: studentProfileId },
+  });
+
+  const organizationChanged = organizationId !== (current.organizationId ?? "");
+  if (current.status !== PROCESS_STATUSES.NOT_STARTED && organizationChanged) {
+    throw new Error(
+      "No se puede quitar ni cambiar la organización: el proceso de este estudiante ya está en progreso."
+    );
+  }
+
   const profile = await prisma.studentProfile.update({
     where: { id: studentProfileId },
     data: {

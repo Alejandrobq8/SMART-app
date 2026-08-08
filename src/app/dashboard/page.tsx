@@ -14,7 +14,6 @@ import {
   type Role,
 } from "@/lib/constants";
 import {
-  assignStudent,
   createOrganization,
   createStudentProfile,
   createUser,
@@ -24,6 +23,7 @@ import {
   reviewHours,
   submitDeliverable,
 } from "@/lib/actions";
+import AssignStudentForm from "./assign-student-form";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -490,37 +490,16 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
       </Card>
 
       <Card title="Asignar asesor / organización a un estudiante">
-        <form action={assignStudent} className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className="block text-xs text-slate-500">Estudiante</label>
-            <select name="studentProfileId" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
-              {students.map((s) => (
-                <option key={s.id} value={s.id}>{s.user.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Profesor asesor</label>
-            <select name="advisorId" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
-              <option value="">Sin asignar</option>
-              {advisors.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Organización</label>
-            <select name="organizationId" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
-              <option value="">Sin asignar</option>
-              {organizations.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}</option>
-              ))}
-            </select>
-          </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-            Asignar
-          </button>
-        </form>
+        <AssignStudentForm
+          students={students.map((s) => ({
+            id: s.id,
+            name: s.user.name,
+            status: s.status,
+            organizationId: s.organizationId,
+          }))}
+          advisors={advisors.map((a) => ({ id: a.id, name: a.name }))}
+          organizations={organizations.map((o) => ({ id: o.id, name: o.name }))}
+        />
       </Card>
 
       <Card title="Crear expediente de estudiante">
