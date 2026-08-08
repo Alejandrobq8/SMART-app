@@ -245,18 +245,6 @@ async function StudentDashboard({ userId }: { userId: string }) {
             <label className="block text-xs text-slate-500">Archivo (nombre)</label>
             <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
           </div>
-          <div>
-            <label className="block text-xs text-slate-500">Pertenece a</label>
-            <select
-              name="processType"
-              required
-              defaultValue={profile.processType}
-              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm"
-            >
-              <option value="PRACTICE">Práctica profesional</option>
-              <option value="TCU">TCU</option>
-            </select>
-          </div>
           <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
             Enviar
           </button>
@@ -266,7 +254,6 @@ async function StudentDashboard({ userId }: { userId: string }) {
           <thead>
             <tr className="text-left text-slate-400 border-b border-slate-100">
               <th className="py-2">Título</th>
-              <th>Pertenece a</th>
               <th>Archivo</th>
               <th>Estado</th>
               <th>Comentario</th>
@@ -276,7 +263,6 @@ async function StudentDashboard({ userId }: { userId: string }) {
             {profile.deliverables.map((d) => (
               <tr key={d.id} className="border-b border-slate-50">
                 <td className="py-2">{d.title}</td>
-                <td className="text-slate-600">{PROCESS_TYPE_LABELS[d.processType as ProcessType]}</td>
                 <td className="text-slate-600">{d.fileName ?? "—"}</td>
                 <td>
                   <StatusBadge
@@ -289,7 +275,7 @@ async function StudentDashboard({ userId }: { userId: string }) {
             ))}
             {profile.deliverables.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-4 text-center text-slate-400">
+                <td colSpan={4} className="py-4 text-center text-slate-400">
                   Aún no hay entregables.
                 </td>
               </tr>
@@ -411,7 +397,6 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
               <input type="hidden" name="deliverableId" value={d.id} />
               <span className="font-medium text-slate-900">{d.studentName}</span>
               <span className="text-slate-500">{d.title}</span>
-              <StatusBadge label={PROCESS_TYPE_LABELS[d.processType as ProcessType]} tone="gray" />
               <input type="text" name="comment" placeholder="Comentario (opcional)" className="border border-slate-300 rounded-md px-2 py-1 text-xs flex-1 min-w-[150px]" />
               <button name="decision" value="APPROVED" className="text-xs bg-emerald-600 text-white rounded-md px-3 py-1 hover:bg-emerald-700">
                 Aprobar

@@ -7,7 +7,6 @@ import {
   DELIVERABLE_STATUSES,
   HOURS_STATUSES,
   PROCESS_STATUSES,
-  PROCESS_TYPES,
   ROLES,
   type Role,
 } from "@/lib/constants";
@@ -138,12 +137,6 @@ export async function submitDeliverable(formData: FormData) {
   const title = String(formData.get("title"));
   const description = String(formData.get("description") ?? "");
   const fileName = String(formData.get("fileName") ?? "");
-  const processTypeInput = String(formData.get("processType") ?? "");
-  const processType = Object.values(PROCESS_TYPES).includes(
-    processTypeInput as (typeof PROCESS_TYPES)[keyof typeof PROCESS_TYPES]
-  )
-    ? processTypeInput
-    : studentProfile.processType;
 
   if (!title) throw new Error("El título del entregable es requerido.");
 
@@ -153,7 +146,6 @@ export async function submitDeliverable(formData: FormData) {
       title,
       description,
       fileName: fileName || null,
-      processType,
     },
   });
 

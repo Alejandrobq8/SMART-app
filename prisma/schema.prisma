@@ -99,7 +99,6 @@ model Deliverable {
   title       String
   description String?
   fileName    String?
-  processType String            @default("TCU")
   status      String            @default("PENDING")
   comment     String?
 

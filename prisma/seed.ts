@@ -127,7 +127,6 @@ async function main() {
       title: "Plan de trabajo del TCU",
       description: "Documento inicial con cronograma y actividades",
       fileName: "plan-trabajo-tcu.pdf",
-      processType: "TCU",
       status: "APPROVED",
       reviewedById: asesor.id,
       reviewedAt: new Date("2026-06-18"),
@@ -140,7 +139,6 @@ async function main() {
       title: "Informe de avance 1",
       description: "Primer informe de avance del proyecto comunal",
       fileName: "informe-avance-1.pdf",
-      processType: "TCU",
       status: "PENDING",
     },
   });
