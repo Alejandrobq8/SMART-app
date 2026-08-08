@@ -1,0 +1,124 @@
+// Sistema de Gestión de Prácticas Profesionales y TCU
+// Modelo de datos derivado de los requisitos funcionales del Acta de Constitución
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite no soporta enums nativos en Prisma; los roles y estados se
+// modelan como String y se validan/tipan en TypeScript (ver src/lib/constants.ts).
+// Role:              STUDENT | ADVISOR | COORDINATION | ORGANIZATION | ADMIN
+// ProcessType:       PRACTICE | TCU
+// ProcessStatus:     NOT_STARTED | IN_PROGRESS | HOURS_COMPLETED | DELIVERABLES_PENDING | COMPLETED
+// HoursStatus:       PENDING | APPROVED | REJECTED
+// DeliverableStatus: PENDING | IN_REVIEW | APPROVED | REJECTED
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String
+  createdAt    DateTime @default(now())
+
+  // Perfil de estudiante (solo si role = STUDENT)
+  studentProfile StudentProfile?
+
+  // Si role = ADVISOR: estudiantes que asesora
+  advisedStudents StudentProfile[] @relation("AdvisorStudents")
+
+  // Si role = ORGANIZATION: representante de una organización externa
+  organization Organization? @relation("OrganizationContact")
+
+  // Horas y entregables que este usuario aprobó/revisó
+  hoursApproved        HoursLog[]    @relation("HoursApprovedBy")
+  deliverablesReviewed Deliverable[] @relation("DeliverableReviewedBy")
+
+  notifications Notification[]
+}
+
+model Organization {
+  id            String  @id @default(cuid())
+  name          String
+  description   String?
+  contactUser   User?   @relation("OrganizationContact", fields: [contactUserId], references: [id])
+  contactUserId String? @unique
+
+  students StudentProfile[]
+}
+
+model StudentProfile {
+  id            String        @id @default(cuid())
+  studentCode   String        @unique
+  career        String
+  processType   String
+  status        String        @default("NOT_STARTED")
+  requiredHours Int           @default(150)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  advisor   User?   @relation("AdvisorStudents", fields: [advisorId], references: [id])
+  advisorId String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+
+  hoursLogs    HoursLog[]
+  deliverables Deliverable[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HoursLog {
+  id          String      @id @default(cuid())
+  date        DateTime
+  hours       Float
+  description String
+  status      String      @default("PENDING")
+  comment     String?
+
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  studentProfileId String
+
+  approvedBy   User?     @relation("HoursApprovedBy", fields: [approvedById], references: [id])
+  approvedById String?
+  approvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model Deliverable {
+  id          String            @id @default(cuid())
+  title       String
+  description String?
+  fileName    String?
+  status      String            @default("PENDING")
+  comment     String?
+
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  studentProfileId String
+
+  reviewedBy   User?     @relation("DeliverableReviewedBy", fields: [reviewedById], references: [id])
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  submittedAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+}

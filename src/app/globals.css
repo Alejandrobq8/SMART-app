@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/*
+  Esta app usa un tema claro fijo (no implementa modo oscuro). Sin
+  `color-scheme: light`, los navegadores en modo oscuro del sistema
+  auto-estilizan inputs/selects/botones con texto claro, que se vuelve
+  invisible sobre las tarjetas blancas de la UI.
+*/
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
