@@ -41,6 +41,7 @@ model User {
   deliverablesReviewed Deliverable[] @relation("DeliverableReviewedBy")
 
   notifications Notification[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Organization {
@@ -111,6 +112,17 @@ model Deliverable {
   reviewedAt   DateTime?
 
   submittedAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 }
 
 model Notification {

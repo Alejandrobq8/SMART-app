@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import {
@@ -334,6 +335,46 @@ export async function createStudentProfile(formData: FormData) {
   });
 
   revalidatePath("/dashboard");
+}
+
+// ---------- Recuperación de contraseña (sin sesión) ----------
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) throw new Error("El correo es requerido.");
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  const { createResetToken } = await import("@/lib/password-reset");
+
+  if (!user) {
+    // No se revela si el correo existe o no; simplemente no hay token que mostrar.
+    redirect("/forgot-password?sent=1");
+  }
+
+  const token = await createResetToken(user.id);
+  redirect(`/forgot-password?sent=1&token=${token}`);
+}
+
+export async function resetPassword(formData: FormData) {
+  const token = String(formData.get("token") ?? "");
+  const newPassword = String(formData.get("newPassword") ?? "");
+
+  if (!token) throw new Error("Enlace de recuperación inválido.");
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error("La nueva contraseña debe tener al menos 6 caracteres.");
+  }
+
+  const { consumeResetToken } = await import("@/lib/password-reset");
+  const { hashPassword } = await import("@/lib/auth");
+
+  const userId = await consumeResetToken(token);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: await hashPassword(newPassword) },
+  });
+
+  redirect("/login?reset=1");
 }
 
 // ---------- Perfil personal (cualquier rol) ----------

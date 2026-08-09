@@ -13,6 +13,10 @@ export default defineConfig({
     globalSetup: "./tests/global-setup.ts",
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.ts"],
+    // Todos los archivos de prueba comparten la misma SQLite de pruebas
+    // (prisma/test.db) y cada uno limpia las tablas en beforeEach; correr
+    // los archivos en paralelo produce condiciones de carrera entre ellos.
+    fileParallelism: false,
     env: {
       DATABASE_URL: TEST_DATABASE_URL,
       AUTH_SECRET: "test-secret",

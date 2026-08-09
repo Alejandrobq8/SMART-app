@@ -19,6 +19,7 @@ vi.mock("@/lib/auth", async () => {
 beforeEach(async () => {
   mockGetSession.mockReset();
   await prisma.notification.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
   await prisma.deliverable.deleteMany();
   await prisma.hoursLog.deleteMany();
   await prisma.studentProfile.deleteMany();
