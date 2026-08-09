@@ -33,18 +33,22 @@ async function recomputeStatus(studentProfileId: string) {
     .filter((h) => h.status === HOURS_STATUSES.APPROVED)
     .reduce((sum, h) => sum + h.hours, 0);
 
-  const hasPendingDeliverables = profile.deliverables.some(
-    (d) => d.status !== DELIVERABLE_STATUSES.APPROVED
-  );
+  // Completo solo si existe al menos un entregable y todos están aprobados.
+  // Un arreglo vacío de entregables NO cuenta como "sin pendientes": .some()
+  // sobre [] da false, lo que antes marcaba el proceso como completado sin
+  // que el estudiante hubiera enviado nunca un entregable.
+  const allDeliverablesApproved =
+    profile.deliverables.length > 0 &&
+    profile.deliverables.every((d) => d.status === DELIVERABLE_STATUSES.APPROVED);
 
   let status: string = PROCESS_STATUSES.NOT_STARTED;
   if (approvedHours > 0 || profile.deliverables.length > 0) {
     status = PROCESS_STATUSES.IN_PROGRESS;
   }
   if (approvedHours >= profile.requiredHours) {
-    status = hasPendingDeliverables
-      ? PROCESS_STATUSES.DELIVERABLES_PENDING
-      : PROCESS_STATUSES.COMPLETED;
+    status = allDeliverablesApproved
+      ? PROCESS_STATUSES.COMPLETED
+      : PROCESS_STATUSES.DELIVERABLES_PENDING;
   }
 
   await prisma.studentProfile.update({
@@ -62,6 +66,11 @@ export async function logHours(formData: FormData) {
     where: { userId: session.userId },
   });
   if (!studentProfile) throw new Error("No tiene un expediente de estudiante.");
+  if (studentProfile.status === PROCESS_STATUSES.COMPLETED) {
+    throw new Error(
+      "El proceso ya fue completado y aprobado. No se pueden registrar más horas."
+    );
+  }
 
   const date = String(formData.get("date"));
   const hours = Number(formData.get("hours"));
@@ -133,6 +142,11 @@ export async function submitDeliverable(formData: FormData) {
     where: { userId: session.userId },
   });
   if (!studentProfile) throw new Error("No tiene un expediente de estudiante.");
+  if (studentProfile.status === PROCESS_STATUSES.COMPLETED) {
+    throw new Error(
+      "El proceso ya fue completado y aprobado. No se pueden enviar más entregables."
+    );
+  }
 
   const title = String(formData.get("title"));
   const description = String(formData.get("description") ?? "");

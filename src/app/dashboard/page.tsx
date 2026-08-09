@@ -182,23 +182,29 @@ async function StudentDashboard({ userId }: { userId: string }) {
       </Card>
 
       <Card title="Registrar horas">
-        <form action={logHours} className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className="block text-xs text-slate-500">Fecha</label>
-            <input type="date" name="date" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Horas</label>
-            <input type="number" step="0.5" min="0.5" name="hours" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
-          </div>
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs text-slate-500">Descripción</label>
-            <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" placeholder="Actividad realizada" />
-          </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-            Registrar
-          </button>
-        </form>
+        {profile.status === "COMPLETED" ? (
+          <p className="text-sm text-slate-500">
+            Tu proceso ya fue completado y aprobado por tu asesor. No se pueden registrar más horas.
+          </p>
+        ) : (
+          <form action={logHours} className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="block text-xs text-slate-500">Fecha</label>
+              <input type="date" name="date" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Horas</label>
+              <input type="number" step="0.5" min="0.5" name="hours" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-xs text-slate-500">Descripción</label>
+              <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" placeholder="Actividad realizada" />
+            </div>
+            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+              Registrar
+            </button>
+          </form>
+        )}
 
         <table className="w-full text-sm mt-5">
           <thead>
@@ -232,23 +238,29 @@ async function StudentDashboard({ userId }: { userId: string }) {
       </Card>
 
       <Card title="Entregables">
-        <form action={submitDeliverable} className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-xs text-slate-500">Título</label>
-            <input type="text" name="title" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
-          </div>
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-xs text-slate-500">Descripción</label>
-            <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500">Archivo (nombre)</label>
-            <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-          </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-            Enviar
-          </button>
-        </form>
+        {profile.status === "COMPLETED" ? (
+          <p className="text-sm text-slate-500">
+            Tu proceso ya fue completado y aprobado por tu asesor. No se pueden enviar más entregables.
+          </p>
+        ) : (
+          <form action={submitDeliverable} className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs text-slate-500">Título</label>
+              <input type="text" name="title" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs text-slate-500">Descripción</label>
+              <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Archivo (nombre)</label>
+              <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+            </div>
+            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+              Enviar
+            </button>
+          </form>
+        )}
 
         <table className="w-full text-sm mt-5">
           <thead>
