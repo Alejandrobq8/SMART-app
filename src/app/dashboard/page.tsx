@@ -24,6 +24,7 @@ import {
   submitDeliverable,
 } from "@/lib/actions";
 import AssignStudentForm from "./assign-student-form";
+import { studentSelectorEmptyMessage } from "@/lib/ui-copy";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -515,11 +516,9 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
       </Card>
 
       <Card title="Crear expediente de estudiante">
-        {usersWithoutProfile.length === 0 ? (
+        {studentSelectorEmptyMessage(usersWithoutProfile.length) ? (
           <p className="text-sm text-slate-500">
-            No hay usuarios con rol <strong>Estudiante</strong> pendientes de expediente. Todos
-            los estudiantes registrados ya tienen uno, o aún no has creado ninguna cuenta de
-            estudiante desde <strong>Administración de usuarios</strong>.
+            {studentSelectorEmptyMessage(usersWithoutProfile.length)}
           </p>
         ) : (
           <form action={createStudentProfile} className="flex flex-wrap items-end gap-3">
