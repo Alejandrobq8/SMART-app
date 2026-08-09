@@ -136,15 +136,51 @@ general y reportes
 
 - Usuarios y roles (estudiante, profesor asesor, coordinación, organización
   externa, administrador) con control de acceso por rol.
-- Expediente centralizado por estudiante (carrera, tipo de proceso, estado,
-  asesor, organización).
+- Expediente centralizado por estudiante (carrera, periodo, tipo de proceso,
+  estado, asesor, organización).
 - Bitácora de horas: registro por el estudiante, aprobación/rechazo por
-  asesor u organización.
+  asesor u organización (con confirmación antes de aprobar/rechazar).
 - Gestión de entregables: carga, revisión y aprobación.
 - Asignación de estudiantes a asesores y organizaciones (coordinación).
-- Notificaciones internas por evento (nuevas horas, entregables, decisiones).
-- Tablero de coordinación con reportes por estado.
+- Notificaciones internas por evento (nuevas horas, entregables, decisiones)
+  y recordatorios automáticos de aprobaciones pendientes con más de 3 días
+  (ver "Recordatorios automáticos" abajo).
+- Tablero de coordinación con reportes por estado, carrera y periodo, con
+  filtros.
 - Administración de usuarios y organizaciones (rol admin/coordinación).
+- Edición de perfil personal (nombre, teléfono, contraseña) por cualquier
+  usuario desde "Mi perfil".
+- Recuperación de contraseña con token de un solo uso (ver abajo).
+
+## Edición de perfil personal
+
+Cualquier usuario puede actualizar su nombre y teléfono, y cambiar su
+contraseña, desde `/dashboard/profile` ("Mi perfil" en el encabezado). El
+correo (identidad de inicio de sesión) y los datos del expediente académico
+(carné, carrera, asesor, organización) no son editables por el propio
+usuario — eso sigue siendo responsabilidad exclusiva de Coordinación.
+
+## Recuperación de contraseña
+
+Flujo de "olvidé mi contraseña" (`/forgot-password` → `/reset-password`) con
+token de un solo uso, válido por 30 minutos, generado en
+`PasswordResetToken`. Como la app no tiene ningún servicio de correo
+configurado (ni debería, según el acta), el enlace de recuperación se
+muestra directamente en pantalla tras la solicitud en vez de enviarse por
+correo — mismo criterio que ya usa la pantalla de login al exponer las
+credenciales de prueba. En un despliegue real, ese paso se reemplazaría por
+un envío de correo con el mismo enlace.
+
+## Recordatorios automáticos
+
+Cuando una hora o un entregable lleva más de 3 días en estado *Pendiente*,
+el sistema notifica automáticamente al asesor (con un enfriamiento de 3 días
+para no duplicar el aviso). No hay infraestructura de cron en este stack, así
+que la verificación corre al cargar el dashboard de asesor/organización y de
+coordinación (`runOverdueReminders()` en `src/lib/reminders.ts`). También
+existe `/api/cron/reminders` (protegida por la variable de entorno
+`CRON_SECRET`) para quien quiera engancharla a un scheduler real en un
+despliegue de producción — no es necesaria para el uso normal en local.
 
 ## Alta de cuentas: por qué no hay autorregistro
 
