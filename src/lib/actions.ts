@@ -319,6 +319,7 @@ export async function createStudentProfile(formData: FormData) {
   const career = String(formData.get("career"));
   const processType = String(formData.get("processType"));
   const requiredHours = Number(formData.get("requiredHours") ?? 150);
+  const period = String(formData.get("period") ?? "").trim();
 
   if (!userId || !studentCode || !career || !processType) {
     throw new Error("Todos los campos son requeridos.");
@@ -331,6 +332,7 @@ export async function createStudentProfile(formData: FormData) {
       career,
       processType,
       requiredHours,
+      period: period || null,
     },
   });
 

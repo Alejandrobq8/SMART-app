@@ -61,6 +61,7 @@ model StudentProfile {
   processType   String
   status        String        @default("NOT_STARTED")
   requiredHours Int           @default(150)
+  period        String?
 
   user   User   @relation(fields: [userId], references: [id])
   userId String @unique
