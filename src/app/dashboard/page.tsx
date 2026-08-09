@@ -27,6 +27,9 @@ import AssignStudentForm from "./assign-student-form";
 import { studentSelectorEmptyMessage } from "@/lib/ui-copy";
 import { runOverdueReminders } from "@/lib/reminders";
 import { countByKey, distinctValues, filterProfiles } from "@/lib/reports";
+import ProgressBar from "@/components/ui/ProgressBar";
+import EmptyState from "@/components/ui/EmptyState";
+import ReviewRow from "@/components/ui/ReviewRow";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -174,12 +177,10 @@ async function StudentDashboard({ userId }: { userId: string }) {
             <p className="font-medium text-slate-900">
               {approvedHours} / {profile.requiredHours} h
             </p>
-            <div className="w-full h-2 bg-slate-100 rounded-full mt-1">
-              <div
-                className="h-2 bg-slate-900 rounded-full"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
+            <ProgressBar
+              percent={progressPct}
+              label={`Horas aprobadas: ${approvedHours} de ${profile.requiredHours}`}
+            />
           </div>
         </div>
       </Card>
@@ -385,52 +386,81 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
       <Card title="Horas pendientes de aprobación">
         <div className="space-y-3">
           {pendingHours.map((h) => (
-            <form
+            <ReviewRow
               key={h.id}
               action={reviewHours}
-              className="flex flex-wrap items-center gap-3 text-sm border border-slate-100 rounded-md p-3"
-            >
-              <input type="hidden" name="hoursLogId" value={h.id} />
-              <span className="font-medium text-slate-900">{h.studentName}</span>
-              <span className="text-slate-500">{h.hours} h — {h.description}</span>
-              <span className="text-slate-400">{h.date.toLocaleDateString("es-CR")}</span>
-              <input type="text" name="comment" placeholder="Comentario (opcional)" className="border border-slate-300 rounded-md px-2 py-1 text-xs flex-1 min-w-[150px]" />
-              <button name="decision" value="APPROVED" className="text-xs bg-emerald-600 text-white rounded-md px-3 py-1 hover:bg-emerald-700">
-                Aprobar
-              </button>
-              <button name="decision" value="REJECTED" className="text-xs bg-red-600 text-white rounded-md px-3 py-1 hover:bg-red-700">
-                Rechazar
-              </button>
-            </form>
+              hiddenFields={{ hoursLogId: h.id }}
+              studentName={h.studentName}
+              summary={`${h.hours} h — ${h.description} (${h.date.toLocaleDateString("es-CR")})`}
+              decisions={[
+                {
+                  value: "APPROVED",
+                  label: "Aprobar",
+                  tone: "approve",
+                  confirmTitle: "¿Aprobar estas horas?",
+                  confirmBody: `Se aprobarán ${h.hours} h reportadas por ${h.studentName}. Esta acción notificará al estudiante y sumará las horas a su progreso.`,
+                },
+                {
+                  value: "REJECTED",
+                  label: "Rechazar",
+                  tone: "reject",
+                  confirmTitle: "¿Rechazar estas horas?",
+                  confirmBody: `Se rechazará el registro de ${h.hours} h de ${h.studentName}. Se le notificará el rechazo.`,
+                },
+              ]}
+            />
           ))}
-          {pendingHours.length === 0 && <p className="text-sm text-slate-400">No hay horas pendientes.</p>}
+          {pendingHours.length === 0 && (
+            <EmptyState
+              icon="✅"
+              title="No hay horas pendientes"
+              description="Cuando un estudiante a tu cargo registre horas, aparecerán acá para tu aprobación."
+            />
+          )}
         </div>
       </Card>
 
       <Card title="Entregables pendientes de revisión">
         <div className="space-y-3">
           {pendingDeliverables.map((d) => (
-            <form
+            <ReviewRow
               key={d.id}
               action={reviewDeliverable}
-              className="flex flex-wrap items-center gap-3 text-sm border border-slate-100 rounded-md p-3"
-            >
-              <input type="hidden" name="deliverableId" value={d.id} />
-              <span className="font-medium text-slate-900">{d.studentName}</span>
-              <span className="text-slate-500">{d.title}</span>
-              <input type="text" name="comment" placeholder="Comentario (opcional)" className="border border-slate-300 rounded-md px-2 py-1 text-xs flex-1 min-w-[150px]" />
-              <button name="decision" value="APPROVED" className="text-xs bg-emerald-600 text-white rounded-md px-3 py-1 hover:bg-emerald-700">
-                Aprobar
-              </button>
-              <button name="decision" value="IN_REVIEW" className="text-xs bg-amber-500 text-white rounded-md px-3 py-1 hover:bg-amber-600">
-                En revisión
-              </button>
-              <button name="decision" value="REJECTED" className="text-xs bg-red-600 text-white rounded-md px-3 py-1 hover:bg-red-700">
-                Rechazar
-              </button>
-            </form>
+              hiddenFields={{ deliverableId: d.id }}
+              studentName={d.studentName}
+              summary={d.title}
+              decisions={[
+                {
+                  value: "APPROVED",
+                  label: "Aprobar",
+                  tone: "approve",
+                  confirmTitle: "¿Aprobar este entregable?",
+                  confirmBody: `Se aprobará "${d.title}" de ${d.studentName}.`,
+                },
+                {
+                  value: "IN_REVIEW",
+                  label: "En revisión",
+                  tone: "neutral",
+                  confirmTitle: "¿Marcar como en revisión?",
+                  confirmBody: `Se marcará "${d.title}" como en revisión, indicando que falta algo por corregir.`,
+                },
+                {
+                  value: "REJECTED",
+                  label: "Rechazar",
+                  tone: "reject",
+                  confirmTitle: "¿Rechazar este entregable?",
+                  confirmBody: `Se rechazará "${d.title}" de ${d.studentName}.`,
+                },
+              ]}
+            />
           ))}
-          {pendingDeliverables.length === 0 && <p className="text-sm text-slate-400">No hay entregables pendientes.</p>}
+          {pendingDeliverables.length === 0 && (
+            <EmptyState
+              icon="✅"
+              title="No hay entregables pendientes"
+              description="Los entregables que suban tus estudiantes a cargo aparecerán acá para tu revisión."
+            />
+          )}
         </div>
       </Card>
 

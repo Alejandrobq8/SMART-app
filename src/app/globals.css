@@ -1,9 +1,86 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --accent: #4f46e5;
+  --accent-foreground: #ffffff;
+  --status-pending: #b45309;
+  --status-pending-bg: #fffbeb;
+  --status-pending-border: #fde68a;
+  --status-approved: #047857;
+  --status-approved-bg: #ecfdf5;
+  --status-approved-border: #a7f3d0;
+  --status-rejected: #b91c1c;
+  --status-rejected-bg: #fef2f2;
+  --status-rejected-border: #fecaca;
+  --status-neutral: #475569;
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-border: #e2e8f0;
   color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1220;
+    --foreground: #e2e8f0;
+    --surface: #131c2e;
+    --border: #263244;
+    --muted: #94a3b8;
+    --accent: #818cf8;
+    --accent-foreground: #0b1220;
+    --status-pending: #fbbf24;
+    --status-pending-bg: #3f2d0a;
+    --status-pending-border: #78500f;
+    --status-approved: #34d399;
+    --status-approved-bg: #0b3324;
+    --status-approved-border: #10603f;
+    --status-rejected: #f87171;
+    --status-rejected-bg: #3a1212;
+    --status-rejected-border: #7f1d1d;
+    --status-neutral: #cbd5e1;
+    --status-neutral-bg: #1c2739;
+    --status-neutral-border: #2c3a50;
+    color-scheme: dark;
+  }
+
+  /*
+    El resto de la app usa clases utilitarias literales de Tailwind
+    (bg-white, text-slate-900, border-slate-200, etc.) en vez de tokens,
+    así que se remapean acá en modo oscuro. Esto evita el bug anterior de
+    texto invisible: antes se forzaba `color-scheme: light` para que el
+    navegador no auto-oscureciera los controles nativos sobre tarjetas
+    blancas; ahora las tarjetas y controles sí cambian a un tema oscuro
+    coherente, así que `color-scheme: dark` ya no genera ese contraste roto.
+  */
+  .bg-white,
+  .bg-slate-50 {
+    background-color: var(--surface) !important;
+  }
+  .text-slate-900,
+  .text-slate-800,
+  .text-slate-700 {
+    color: var(--foreground) !important;
+  }
+  .text-slate-600,
+  .text-slate-500,
+  .text-slate-400 {
+    color: var(--muted) !important;
+  }
+  .border-slate-100,
+  .border-slate-200,
+  .border-slate-300 {
+    border-color: var(--border) !important;
+  }
+  input,
+  select,
+  textarea {
+    background-color: var(--surface);
+    color: var(--foreground);
+  }
 }
 
 @theme inline {
@@ -13,15 +90,31 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/*
-  Esta app usa un tema claro fijo (no implementa modo oscuro). Sin
-  `color-scheme: light`, los navegadores en modo oscuro del sistema
-  auto-estilizan inputs/selects/botones con texto claro, que se vuelve
-  invisible sobre las tarjetas blancas de la UI.
-*/
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+}
+
+/* Foco visible consistente en todo elemento interactivo, sin tener que
+   repetir focus-visible: en cada botón/input/link de la app. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
