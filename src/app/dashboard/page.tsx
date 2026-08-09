@@ -30,6 +30,7 @@ import { countByKey, distinctValues, filterProfiles } from "@/lib/reports";
 import ProgressBar from "@/components/ui/ProgressBar";
 import EmptyState from "@/components/ui/EmptyState";
 import ReviewRow from "@/components/ui/ReviewRow";
+import Tabs from "@/components/ui/Tabs";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -139,6 +140,8 @@ async function StudentDashboard({ userId }: { userId: string }) {
     .reduce((s, h) => s + h.hours, 0);
   const progressPct = Math.min(100, Math.round((approvedHours / profile.requiredHours) * 100));
 
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   return (
     <div className="space-y-6">
       <Card title="Mi expediente">
@@ -185,124 +188,148 @@ async function StudentDashboard({ userId }: { userId: string }) {
         </div>
       </Card>
 
-      <Card title="Registrar horas">
-        {profile.status === "COMPLETED" ? (
-          <p className="text-sm text-slate-500">
-            Tu proceso ya fue completado y aprobado por tu asesor. No se pueden registrar más horas.
-          </p>
-        ) : (
-          <form action={logHours} className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="block text-xs text-slate-500">Fecha</label>
-              <input type="date" name="date" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500">Horas</label>
-              <input type="number" step="0.5" min="0.5" name="hours" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs text-slate-500">Descripción</label>
-              <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" placeholder="Actividad realizada" />
-            </div>
-            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-              Registrar
-            </button>
-          </form>
-        )}
+      <Tabs
+        tabs={[
+          {
+            id: "horas",
+            label: "Horas",
+            icon: "clock",
+            content: (
+              <Card title="Registrar horas">
+                {profile.status === "COMPLETED" ? (
+                  <p className="text-sm text-slate-500">
+                    Tu proceso ya fue completado y aprobado por tu asesor. No se pueden registrar más horas.
+                  </p>
+                ) : (
+                  <form action={logHours} className="flex flex-wrap items-end gap-3">
+                    <div>
+                      <label className="block text-xs text-slate-500">Fecha</label>
+                      <input type="date" name="date" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-500">Horas</label>
+                      <input type="number" step="0.5" min="0.5" name="hours" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
+                    </div>
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-xs text-slate-500">Descripción</label>
+                      <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" placeholder="Actividad realizada" />
+                    </div>
+                    <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+                      Registrar
+                    </button>
+                  </form>
+                )}
 
-        <table className="w-full text-sm mt-5">
-          <thead>
-            <tr className="text-left text-slate-400 border-b border-slate-100">
-              <th className="py-2">Fecha</th>
-              <th>Horas</th>
-              <th>Descripción</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {profile.hoursLogs.map((h) => (
-              <tr key={h.id} className="border-b border-slate-50">
-                <td className="py-2">{h.date.toLocaleDateString("es-CR")}</td>
-                <td>{h.hours}</td>
-                <td className="text-slate-600">{h.description}</td>
-                <td>
-                  <StatusBadge label={HOURS_STATUS_LABELS[h.status as HoursStatus]} tone={hoursTone(h.status)} />
-                </td>
-              </tr>
-            ))}
-            {profile.hoursLogs.length === 0 && (
-              <tr>
-                <td colSpan={4} className="py-4 text-center text-slate-400">
-                  Aún no hay horas registradas.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+                <table className="w-full text-sm mt-5">
+                  <thead>
+                    <tr className="text-left text-slate-400 border-b border-slate-100">
+                      <th className="py-2">Fecha</th>
+                      <th>Horas</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profile.hoursLogs.map((h) => (
+                      <tr key={h.id} className="border-b border-slate-50">
+                        <td className="py-2">{h.date.toLocaleDateString("es-CR")}</td>
+                        <td>{h.hours}</td>
+                        <td className="text-slate-600">{h.description}</td>
+                        <td>
+                          <StatusBadge label={HOURS_STATUS_LABELS[h.status as HoursStatus]} tone={hoursTone(h.status)} />
+                        </td>
+                      </tr>
+                    ))}
+                    {profile.hoursLogs.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-4 text-center text-slate-400">
+                          Aún no hay horas registradas.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            ),
+          },
+          {
+            id: "entregables",
+            label: "Entregables",
+            icon: "inbox",
+            content: (
+              <Card title="Entregables">
+                {profile.status === "COMPLETED" ? (
+                  <p className="text-sm text-slate-500">
+                    Tu proceso ya fue completado y aprobado por tu asesor. No se pueden enviar más entregables.
+                  </p>
+                ) : (
+                  <form action={submitDeliverable} className="flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[180px]">
+                      <label className="block text-xs text-slate-500">Título</label>
+                      <input type="text" name="title" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+                    </div>
+                    <div className="flex-1 min-w-[180px]">
+                      <label className="block text-xs text-slate-500">Descripción</label>
+                      <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-500">Archivo (nombre)</label>
+                      <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                    </div>
+                    <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+                      Enviar
+                    </button>
+                  </form>
+                )}
 
-      <Card title="Entregables">
-        {profile.status === "COMPLETED" ? (
-          <p className="text-sm text-slate-500">
-            Tu proceso ya fue completado y aprobado por tu asesor. No se pueden enviar más entregables.
-          </p>
-        ) : (
-          <form action={submitDeliverable} className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[180px]">
-              <label className="block text-xs text-slate-500">Título</label>
-              <input type="text" name="title" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
-            </div>
-            <div className="flex-1 min-w-[180px]">
-              <label className="block text-xs text-slate-500">Descripción</label>
-              <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500">Archivo (nombre)</label>
-              <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-            </div>
-            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-              Enviar
-            </button>
-          </form>
-        )}
-
-        <table className="w-full text-sm mt-5">
-          <thead>
-            <tr className="text-left text-slate-400 border-b border-slate-100">
-              <th className="py-2">Título</th>
-              <th>Archivo</th>
-              <th>Estado</th>
-              <th>Comentario</th>
-            </tr>
-          </thead>
-          <tbody>
-            {profile.deliverables.map((d) => (
-              <tr key={d.id} className="border-b border-slate-50">
-                <td className="py-2">{d.title}</td>
-                <td className="text-slate-600">{d.fileName ?? "—"}</td>
-                <td>
-                  <StatusBadge
-                    label={DELIVERABLE_STATUS_LABELS[d.status as DeliverableStatus]}
-                    tone={deliverableTone(d.status)}
-                  />
-                </td>
-                <td className="text-slate-500">{d.comment ?? "—"}</td>
-              </tr>
-            ))}
-            {profile.deliverables.length === 0 && (
-              <tr>
-                <td colSpan={4} className="py-4 text-center text-slate-400">
-                  Aún no hay entregables.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
-
-      <Card title="Notificaciones">
-        <NotificationsPanel notifications={notifications} />
-      </Card>
+                <table className="w-full text-sm mt-5">
+                  <thead>
+                    <tr className="text-left text-slate-400 border-b border-slate-100">
+                      <th className="py-2">Título</th>
+                      <th>Archivo</th>
+                      <th>Estado</th>
+                      <th>Comentario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profile.deliverables.map((d) => (
+                      <tr key={d.id} className="border-b border-slate-50">
+                        <td className="py-2">{d.title}</td>
+                        <td className="text-slate-600">{d.fileName ?? "—"}</td>
+                        <td>
+                          <StatusBadge
+                            label={DELIVERABLE_STATUS_LABELS[d.status as DeliverableStatus]}
+                            tone={deliverableTone(d.status)}
+                          />
+                        </td>
+                        <td className="text-slate-500">{d.comment ?? "—"}</td>
+                      </tr>
+                    ))}
+                    {profile.deliverables.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-4 text-center text-slate-400">
+                          Aún no hay entregables.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            ),
+          },
+          {
+            id: "notificaciones",
+            label: "Notificaciones",
+            icon: "bell",
+            badge: unreadCount,
+            content: (
+              <Card title="Notificaciones">
+                <NotificationsPanel notifications={notifications} />
+              </Card>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
@@ -344,130 +371,162 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
       .map((d) => ({ ...d, studentName: s.user.name }))
   );
 
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   return (
-    <div className="space-y-6">
-      <Card title="Estudiantes a cargo">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-slate-400 border-b border-slate-100">
-              <th className="py-2">Estudiante</th>
-              <th>Carrera</th>
-              <th>Proceso</th>
-              <th>Estado</th>
-              <th>Horas aprobadas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((s) => {
-              const approved = s.hoursLogs.filter((h) => h.status === "APPROVED").reduce((a, h) => a + h.hours, 0);
-              return (
-                <tr key={s.id} className="border-b border-slate-50">
-                  <td className="py-2">{s.user.name}</td>
-                  <td>{s.career}</td>
-                  <td>{PROCESS_TYPE_LABELS[s.processType as ProcessType]}</td>
-                  <td>
-                    <StatusBadge label={PROCESS_STATUS_LABELS[s.status as ProcessStatus]} tone={processTone(s.status)} />
-                  </td>
-                  <td>{approved} / {s.requiredHours} h</td>
-                </tr>
-              );
-            })}
-            {students.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-4 text-center text-slate-400">
-                  No tienes estudiantes asignados.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
-
-      <Card title="Horas pendientes de aprobación">
-        <div className="space-y-3">
-          {pendingHours.map((h) => (
-            <ReviewRow
-              key={h.id}
-              action={reviewHours}
-              hiddenFields={{ hoursLogId: h.id }}
-              studentName={h.studentName}
-              summary={`${h.hours} h — ${h.description} (${h.date.toLocaleDateString("es-CR")})`}
-              decisions={[
-                {
-                  value: "APPROVED",
-                  label: "Aprobar",
-                  tone: "approve",
-                  confirmTitle: "¿Aprobar estas horas?",
-                  confirmBody: `Se aprobarán ${h.hours} h reportadas por ${h.studentName}. Esta acción notificará al estudiante y sumará las horas a su progreso.`,
-                },
-                {
-                  value: "REJECTED",
-                  label: "Rechazar",
-                  tone: "reject",
-                  confirmTitle: "¿Rechazar estas horas?",
-                  confirmBody: `Se rechazará el registro de ${h.hours} h de ${h.studentName}. Se le notificará el rechazo.`,
-                },
-              ]}
-            />
-          ))}
-          {pendingHours.length === 0 && (
-            <EmptyState
-              icon="✅"
-              title="No hay horas pendientes"
-              description="Cuando un estudiante a tu cargo registre horas, aparecerán acá para tu aprobación."
-            />
-          )}
-        </div>
-      </Card>
-
-      <Card title="Entregables pendientes de revisión">
-        <div className="space-y-3">
-          {pendingDeliverables.map((d) => (
-            <ReviewRow
-              key={d.id}
-              action={reviewDeliverable}
-              hiddenFields={{ deliverableId: d.id }}
-              studentName={d.studentName}
-              summary={d.title}
-              decisions={[
-                {
-                  value: "APPROVED",
-                  label: "Aprobar",
-                  tone: "approve",
-                  confirmTitle: "¿Aprobar este entregable?",
-                  confirmBody: `Se aprobará "${d.title}" de ${d.studentName}.`,
-                },
-                {
-                  value: "IN_REVIEW",
-                  label: "En revisión",
-                  tone: "neutral",
-                  confirmTitle: "¿Marcar como en revisión?",
-                  confirmBody: `Se marcará "${d.title}" como en revisión, indicando que falta algo por corregir.`,
-                },
-                {
-                  value: "REJECTED",
-                  label: "Rechazar",
-                  tone: "reject",
-                  confirmTitle: "¿Rechazar este entregable?",
-                  confirmBody: `Se rechazará "${d.title}" de ${d.studentName}.`,
-                },
-              ]}
-            />
-          ))}
-          {pendingDeliverables.length === 0 && (
-            <EmptyState
-              icon="✅"
-              title="No hay entregables pendientes"
-              description="Los entregables que suban tus estudiantes a cargo aparecerán acá para tu revisión."
-            />
-          )}
-        </div>
-      </Card>
-
-      <Card title="Notificaciones">
-        <NotificationsPanel notifications={notifications} />
-      </Card>
-    </div>
+    <Tabs
+      tabs={[
+        {
+          id: "estudiantes",
+          label: "Estudiantes a cargo",
+          icon: "users",
+          content: (
+            <Card title="Estudiantes a cargo">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-400 border-b border-slate-100">
+                    <th className="py-2">Estudiante</th>
+                    <th>Carrera</th>
+                    <th>Proceso</th>
+                    <th>Estado</th>
+                    <th>Horas aprobadas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map((s) => {
+                    const approved = s.hoursLogs.filter((h) => h.status === "APPROVED").reduce((a, h) => a + h.hours, 0);
+                    return (
+                      <tr key={s.id} className="border-b border-slate-50">
+                        <td className="py-2">{s.user.name}</td>
+                        <td>{s.career}</td>
+                        <td>{PROCESS_TYPE_LABELS[s.processType as ProcessType]}</td>
+                        <td>
+                          <StatusBadge label={PROCESS_STATUS_LABELS[s.status as ProcessStatus]} tone={processTone(s.status)} />
+                        </td>
+                        <td>{approved} / {s.requiredHours} h</td>
+                      </tr>
+                    );
+                  })}
+                  {students.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-4 text-center text-slate-400">
+                        No tienes estudiantes asignados.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </Card>
+          ),
+        },
+        {
+          id: "horas",
+          label: "Horas pendientes",
+          icon: "clock",
+          badge: pendingHours.length,
+          content: (
+            <Card title="Horas pendientes de aprobación">
+              <div className="space-y-3">
+                {pendingHours.map((h) => (
+                  <ReviewRow
+                    key={h.id}
+                    action={reviewHours}
+                    hiddenFields={{ hoursLogId: h.id }}
+                    studentName={h.studentName}
+                    summary={`${h.hours} h — ${h.description} (${h.date.toLocaleDateString("es-CR")})`}
+                    decisions={[
+                      {
+                        value: "APPROVED",
+                        label: "Aprobar",
+                        tone: "approve",
+                        confirmTitle: "¿Aprobar estas horas?",
+                        confirmBody: `Se aprobarán ${h.hours} h reportadas por ${h.studentName}. Esta acción notificará al estudiante y sumará las horas a su progreso.`,
+                      },
+                      {
+                        value: "REJECTED",
+                        label: "Rechazar",
+                        tone: "reject",
+                        confirmTitle: "¿Rechazar estas horas?",
+                        confirmBody: `Se rechazará el registro de ${h.hours} h de ${h.studentName}. Se le notificará el rechazo.`,
+                      },
+                    ]}
+                  />
+                ))}
+                {pendingHours.length === 0 && (
+                  <EmptyState
+                    icon="check-circle"
+                    title="No hay horas pendientes"
+                    description="Cuando un estudiante a tu cargo registre horas, aparecerán acá para tu aprobación."
+                  />
+                )}
+              </div>
+            </Card>
+          ),
+        },
+        {
+          id: "entregables",
+          label: "Entregables pendientes",
+          icon: "inbox",
+          badge: pendingDeliverables.length,
+          content: (
+            <Card title="Entregables pendientes de revisión">
+              <div className="space-y-3">
+                {pendingDeliverables.map((d) => (
+                  <ReviewRow
+                    key={d.id}
+                    action={reviewDeliverable}
+                    hiddenFields={{ deliverableId: d.id }}
+                    studentName={d.studentName}
+                    summary={d.title}
+                    decisions={[
+                      {
+                        value: "APPROVED",
+                        label: "Aprobar",
+                        tone: "approve",
+                        confirmTitle: "¿Aprobar este entregable?",
+                        confirmBody: `Se aprobará "${d.title}" de ${d.studentName}.`,
+                      },
+                      {
+                        value: "IN_REVIEW",
+                        label: "En revisión",
+                        tone: "neutral",
+                        confirmTitle: "¿Marcar como en revisión?",
+                        confirmBody: `Se marcará "${d.title}" como en revisión, indicando que falta algo por corregir.`,
+                      },
+                      {
+                        value: "REJECTED",
+                        label: "Rechazar",
+                        tone: "reject",
+                        confirmTitle: "¿Rechazar este entregable?",
+                        confirmBody: `Se rechazará "${d.title}" de ${d.studentName}.`,
+                      },
+                    ]}
+                  />
+                ))}
+                {pendingDeliverables.length === 0 && (
+                  <EmptyState
+                    icon="check-circle"
+                    title="No hay entregables pendientes"
+                    description="Los entregables que suban tus estudiantes a cargo aparecerán acá para tu revisión."
+                  />
+                )}
+              </div>
+            </Card>
+          ),
+        },
+        {
+          id: "notificaciones",
+          label: "Notificaciones",
+          icon: "bell",
+          badge: unreadCount,
+          content: (
+            <Card title="Notificaciones">
+              <NotificationsPanel notifications={notifications} />
+            </Card>
+          ),
+        },
+      ]}
+    />
   );
 }
 
@@ -515,8 +574,14 @@ async function CoordinationDashboard({
   const careerOptions = distinctValues(allStudents, "career");
   const periodOptions = distinctValues(allStudents, "period");
 
-  return (
-    <div className="space-y-6">
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const tabs = [
+    {
+      id: "tablero",
+      label: "Tablero",
+      icon: "chart-bar" as const,
+      content: (
       <Card title="Tablero general — estado de estudiantes">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
           {Object.entries(PROCESS_STATUS_LABELS).map(([key, label]) => (
@@ -620,7 +685,13 @@ async function CoordinationDashboard({
           </tbody>
         </table>
       </Card>
-
+      ),
+    },
+    {
+      id: "asignaciones",
+      label: "Asignaciones",
+      icon: "users" as const,
+      content: (
       <Card title="Asignar asesor / organización a un estudiante">
         <AssignStudentForm
           students={allStudents.map((s) => ({
@@ -633,7 +704,13 @@ async function CoordinationDashboard({
           organizations={organizations.map((o) => ({ id: o.id, name: o.name }))}
         />
       </Card>
-
+      ),
+    },
+    {
+      id: "expedientes",
+      label: "Expedientes nuevos",
+      icon: "user-plus" as const,
+      content: (
       <Card title="Crear expediente de estudiante">
         {studentSelectorEmptyMessage(usersWithoutProfile.length) ? (
           <p className="text-sm text-slate-500">
@@ -681,7 +758,13 @@ async function CoordinationDashboard({
           </form>
         )}
       </Card>
-
+      ),
+    },
+    {
+      id: "organizaciones",
+      label: "Organizaciones",
+      icon: "building" as const,
+      content: (
       <Card title="Organizaciones externas">
         <form action={createOrganization} className="flex flex-wrap items-end gap-3 mb-5">
           <div>
@@ -705,42 +788,60 @@ async function CoordinationDashboard({
           ))}
         </ul>
       </Card>
-
-      {role === ROLES.ADMIN && (
-        <Card title="Administración de usuarios">
-          <form action={createUser} className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="block text-xs text-slate-500">Nombre</label>
-              <input type="text" name="name" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500">Correo</label>
-              <input type="email" name="email" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500">Contraseña</label>
-              <input type="text" name="password" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500">Rol</label>
-              <select name="role" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
-                {Object.entries(ROLE_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            </div>
-            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
-              Crear usuario
-            </button>
-          </form>
+      ),
+    },
+    ...(role === ROLES.ADMIN
+      ? [
+          {
+            id: "administracion",
+            label: "Administración",
+            icon: "academic-cap" as const,
+            content: (
+              <Card title="Administración de usuarios">
+                <form action={createUser} className="flex flex-wrap items-end gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500">Nombre</label>
+                    <input type="text" name="name" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Correo</label>
+                    <input type="email" name="email" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Contraseña</label>
+                    <input type="text" name="password" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Rol</label>
+                    <select name="role" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                      {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+                    Crear usuario
+                  </button>
+                </form>
+              </Card>
+            ),
+          },
+        ]
+      : []),
+    {
+      id: "notificaciones",
+      label: "Notificaciones",
+      icon: "bell" as const,
+      badge: unreadCount,
+      content: (
+        <Card title="Notificaciones">
+          <NotificationsPanel notifications={notifications} />
         </Card>
-      )}
+      ),
+    },
+  ];
 
-      <Card title="Notificaciones">
-        <NotificationsPanel notifications={notifications} />
-      </Card>
-    </div>
-  );
+  return <Tabs tabs={tabs} />;
 }
 
 export default async function DashboardPage({

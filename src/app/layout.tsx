@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Crimson_Pro, Atkinson_Hyperlegible } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Par tipográfico "académico": Crimson Pro (serif, para encabezados —
+// distingue esto de un SaaS genérico) + Atkinson Hyperlegible (sans,
+// diseñada específicamente para legibilidad — apropiada para un sistema
+// que usan a diario estudiantes, profesores y personal administrativo).
+const crimsonPro = Crimson_Pro({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const atkinson = Atkinson_Hyperlegible({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -25,7 +31,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${crimsonPro.variable} ${atkinson.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

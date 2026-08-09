@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f6f7fb;
+  --foreground: #131c31;
   --surface: #ffffff;
-  --border: #e2e8f0;
-  --muted: #64748b;
-  --accent: #4f46e5;
+  --border: #dde3f0;
+  --muted: #5b6478;
+  --accent: #1e40af;
+  --accent-soft: #eef2ff;
   --accent-foreground: #ffffff;
   --status-pending: #b45309;
   --status-pending-bg: #fffbeb;
@@ -26,11 +27,12 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0b1220;
-    --foreground: #e2e8f0;
+    --foreground: #e6eaf5;
     --surface: #131c2e;
     --border: #263244;
-    --muted: #94a3b8;
-    --accent: #818cf8;
+    --muted: #97a2ba;
+    --accent: #93a9f5;
+    --accent-soft: #1a2444;
     --accent-foreground: #0b1220;
     --status-pending: #fbbf24;
     --status-pending-bg: #3f2d0a;
@@ -86,14 +88,46 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Encabezados en serif académico en toda la app, sin tener que anotar
+   font-serif en cada componente uno por uno. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+/* Reskin del color de acento: en vez de anotar el nuevo color de marca en
+   cada botón/barra de progreso repetido por toda la app, se remapea acá el
+   par bg-slate-900/hover:bg-slate-800 (el "botón primario" y relleno de
+   barra de progreso ya existentes) al acento de la nueva paleta. */
+.bg-slate-900 {
+  background-color: var(--accent) !important;
+}
+.hover\:bg-slate-800:hover {
+  background-color: color-mix(in srgb, var(--accent) 82%, black) !important;
+}
+
+/* Todo elemento clicable se ve clicable. */
+button,
+a,
+[role="button"],
+summary {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
 }
 
 /* Foco visible consistente en todo elemento interactivo, sin tener que
@@ -116,5 +150,22 @@ textarea:focus-visible,
   }
   50% {
     opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-enter {
+    animation: fade-in-up 320ms ease-out both;
   }
 }
