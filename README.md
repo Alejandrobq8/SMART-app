@@ -146,6 +146,24 @@ general y reportes
 - Tablero de coordinación con reportes por estado.
 - Administración de usuarios y organizaciones (rol admin/coordinación).
 
+## Alta de cuentas: por qué no hay autorregistro
+
+El acta pide un sistema de gestión interno, no un portal público: los
+"usuarios" del sistema son estudiantes ya matriculados en un curso
+específico de Práctica Profesional o TCU, cuyo expediente es abierto por
+**Coordinación** a partir de datos que ya existen en el sistema académico
+(carné, carrera, tipo de proceso). Permitir que cualquier persona se
+autorregistre generaría cuentas huérfanas sin expediente y rompería la
+invariante que hoy sostiene todo el flujo: *el expediente creado por
+coordinación es la fuente de verdad de quién es estudiante activo*.
+
+Por eso el alta se mantiene controlada (Administrador o Coordinación crea
+la cuenta desde "Administración de usuarios", como ya se describe en el
+paso 0 del flujo más abajo) en vez de implementar un formulario de registro
+público. Si en el futuro el volumen de altas por cuatrimestre lo justifica,
+la extensión natural sería una importación masiva (CSV) desde Coordinación,
+no autorregistro abierto.
+
 ## Fuera de alcance (según el acta)
 
 Integración financiera, matrícula académica, app móvil nativa, migración de
