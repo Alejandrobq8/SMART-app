@@ -25,6 +25,7 @@ import {
 } from "@/lib/actions";
 import AssignStudentForm from "./assign-student-form";
 import { studentSelectorEmptyMessage } from "@/lib/ui-copy";
+import { runOverdueReminders } from "@/lib/reminders";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -307,6 +308,12 @@ async function StudentDashboard({ userId }: { userId: string }) {
 // ---------------- ADVISOR / ORGANIZATION (review) ----------------
 
 async function ReviewerDashboard({ userId, role }: { userId: string; role: Role }) {
+  try {
+    await runOverdueReminders();
+  } catch {
+    // Un fallo generando recordatorios no debe romper el dashboard.
+  }
+
   const where =
     role === ROLES.ADVISOR
       ? { advisorId: userId }
@@ -436,6 +443,12 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
 // ---------------- COORDINATION / ADMIN ----------------
 
 async function CoordinationDashboard({ userId, role }: { userId: string; role: Role }) {
+  try {
+    await runOverdueReminders();
+  } catch {
+    // Un fallo generando recordatorios no debe romper el dashboard.
+  }
+
   const [students, advisors, organizations, usersWithoutProfile, notifications] = await Promise.all([
     prisma.studentProfile.findMany({
       include: { user: true, advisor: true, organization: true, hoursLogs: true, deliverables: true },
