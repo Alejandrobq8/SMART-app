@@ -26,6 +26,7 @@ import {
 import AssignStudentForm from "./assign-student-form";
 import { studentSelectorEmptyMessage } from "@/lib/ui-copy";
 import { runOverdueReminders } from "@/lib/reminders";
+import { countByKey, distinctValues, filterProfiles } from "@/lib/reports";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -442,14 +443,22 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
 
 // ---------------- COORDINATION / ADMIN ----------------
 
-async function CoordinationDashboard({ userId, role }: { userId: string; role: Role }) {
+async function CoordinationDashboard({
+  userId,
+  role,
+  searchParams,
+}: {
+  userId: string;
+  role: Role;
+  searchParams: { career?: string; period?: string };
+}) {
   try {
     await runOverdueReminders();
   } catch {
     // Un fallo generando recordatorios no debe romper el dashboard.
   }
 
-  const [students, advisors, organizations, usersWithoutProfile, notifications] = await Promise.all([
+  const [allStudents, advisors, organizations, usersWithoutProfile, notifications] = await Promise.all([
     prisma.studentProfile.findMany({
       include: { user: true, advisor: true, organization: true, hoursLogs: true, deliverables: true },
       orderBy: { createdAt: "desc" },
@@ -460,10 +469,21 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
     prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 10 }),
   ]);
 
+  const careerFilter = searchParams.career ?? "";
+  const periodFilter = searchParams.period ?? "";
+  const students = filterProfiles(allStudents, {
+    career: careerFilter || undefined,
+    period: periodFilter || undefined,
+  });
+
   const statusCounts = students.reduce<Record<string, number>>((acc, s) => {
     acc[s.status] = (acc[s.status] ?? 0) + 1;
     return acc;
   }, {});
+  const careerCounts = countByKey(allStudents, "career");
+  const periodCounts = countByKey(allStudents, "period");
+  const careerOptions = distinctValues(allStudents, "career");
+  const periodOptions = distinctValues(allStudents, "period");
 
   return (
     <div className="space-y-6">
@@ -477,11 +497,66 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
           ))}
         </div>
 
+        <div className="grid sm:grid-cols-2 gap-4 mb-6">
+          <div>
+            <p className="text-xs font-medium text-slate-500 mb-2">Por carrera</p>
+            <ul className="text-sm space-y-1">
+              {Object.entries(careerCounts).map(([career, count]) => (
+                <li key={career} className="flex justify-between border-b border-slate-50 py-1">
+                  <span className="text-slate-700">{career}</span>
+                  <span className="text-slate-400">{count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 mb-2">Por periodo</p>
+            <ul className="text-sm space-y-1">
+              {Object.entries(periodCounts).map(([period, count]) => (
+                <li key={period} className="flex justify-between border-b border-slate-50 py-1">
+                  <span className="text-slate-700">{period}</span>
+                  <span className="text-slate-400">{count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <form method="GET" className="flex flex-wrap items-end gap-3 mb-4">
+          <div>
+            <label className="block text-xs text-slate-500">Filtrar por carrera</label>
+            <select name="career" defaultValue={careerFilter} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+              <option value="">Todas</option>
+              {careerOptions.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-slate-500">Filtrar por periodo</label>
+            <select name="period" defaultValue={periodFilter} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+              <option value="">Todos</option>
+              {periodOptions.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+            Filtrar
+          </button>
+          {(careerFilter || periodFilter) && (
+            <a href="/dashboard" className="text-xs text-slate-500 underline">
+              Limpiar filtros
+            </a>
+          )}
+        </form>
+
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-slate-400 border-b border-slate-100">
               <th className="py-2">Estudiante</th>
               <th>Carrera</th>
+              <th>Periodo</th>
               <th>Asesor</th>
               <th>Organización</th>
               <th>Estado</th>
@@ -495,6 +570,7 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
                 <tr key={s.id} className="border-b border-slate-50">
                   <td className="py-2">{s.user.name}</td>
                   <td>{s.career}</td>
+                  <td>{s.period ?? "—"}</td>
                   <td>{s.advisor?.name ?? "—"}</td>
                   <td>{s.organization?.name ?? "—"}</td>
                   <td>
@@ -506,8 +582,8 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
             })}
             {students.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-4 text-center text-slate-400">
-                  No hay expedientes registrados.
+                <td colSpan={7} className="py-4 text-center text-slate-400">
+                  No hay expedientes que coincidan con el filtro.
                 </td>
               </tr>
             )}
@@ -517,7 +593,7 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
 
       <Card title="Asignar asesor / organización a un estudiante">
         <AssignStudentForm
-          students={students.map((s) => ({
+          students={allStudents.map((s) => ({
             id: s.id,
             name: s.user.name,
             status: s.status,
@@ -560,6 +636,10 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
                 <option value="PRACTICE">Práctica profesional</option>
                 <option value="TCU">TCU</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500">Periodo</label>
+              <input type="text" name="period" placeholder="Ej. 2026-1" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
             </div>
             <div>
               <label className="block text-xs text-slate-500">Horas requeridas</label>
@@ -633,7 +713,11 @@ async function CoordinationDashboard({ userId, role }: { userId: string; role: R
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ career?: string; period?: string }>;
+}) {
   const session = await getSession();
   if (!session) return null;
 
@@ -643,5 +727,11 @@ export default async function DashboardPage() {
   if (session.role === ROLES.ADVISOR || session.role === ROLES.ORGANIZATION) {
     return <ReviewerDashboard userId={session.userId} role={session.role as Role} />;
   }
-  return <CoordinationDashboard userId={session.userId} role={session.role as Role} />;
+  return (
+    <CoordinationDashboard
+      userId={session.userId}
+      role={session.role as Role}
+      searchParams={await searchParams}
+    />
+  );
 }
