@@ -336,6 +336,54 @@ export async function createStudentProfile(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+// ---------- Perfil personal (cualquier rol) ----------
+
+export async function updateProfile(formData: FormData) {
+  const session = await requireSession();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+
+  if (!name) throw new Error("El nombre no puede estar vacío.");
+
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { name, phone: phone || null },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/profile");
+}
+
+export async function changePassword(formData: FormData) {
+  const session = await requireSession();
+  const { hashPassword, verifyPassword } = await import("@/lib/auth");
+
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const newPassword = String(formData.get("newPassword") ?? "");
+
+  if (!currentPassword || !newPassword) {
+    throw new Error("La contraseña actual y la nueva son requeridas.");
+  }
+  if (newPassword.length < 6) {
+    throw new Error("La nueva contraseña debe tener al menos 6 caracteres.");
+  }
+
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: session.userId },
+  });
+
+  const valid = await verifyPassword(currentPassword, user.passwordHash);
+  if (!valid) throw new Error("La contraseña actual no es correcta.");
+
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { passwordHash: await hashPassword(newPassword) },
+  });
+
+  revalidatePath("/dashboard/profile");
+}
+
 // ---------- Notificaciones ----------
 
 export async function markNotificationRead(formData: FormData) {

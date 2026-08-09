@@ -24,6 +24,7 @@ model User {
   email        String   @unique
   passwordHash String
   role         String
+  phone        String?
   createdAt    DateTime @default(now())
 
   // Perfil de estudiante (solo si role = STUDENT)

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { ROLE_LABELS, type Role } from "@/lib/constants";
 import LogoutButton from "./logout-button";
@@ -32,6 +33,12 @@ export default async function DashboardLayout({
                 {ROLE_LABELS[session.role as Role]}
               </p>
             </div>
+            <Link
+              href="/dashboard/profile"
+              className="text-sm text-slate-600 hover:text-slate-900 underline underline-offset-2"
+            >
+              Mi perfil
+            </Link>
             <LogoutButton />
           </div>
         </div>
