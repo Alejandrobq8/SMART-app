@@ -1,0 +1,47 @@
+name: CI
+
+# Pipeline de integración continua: en cada push o pull request a main se
+# instala el proyecto, se genera el cliente de Prisma, se corre ESLint
+# (estándares de código / análisis estático) y la suite de pruebas de
+# Vitest (unitarias + de integración, incluida la regresión de bugs).
+# Un fallo aquí bloquea el merge — es la evidencia de "construimos
+# correctamente el producto" (verificación) para la entrega final.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    name: Lint, tests y build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Generar cliente de Prisma
+        run: npx prisma generate
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Pruebas (Vitest)
+        run: npm run test
+
+      - name: Build de producción
+        run: npm run build
+        env:
+          DATABASE_URL: "file:./ci.db"
+          AUTH_SECRET: "ci-build-secret"
