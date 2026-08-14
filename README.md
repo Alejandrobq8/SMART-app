@@ -16,10 +16,22 @@ MVP funcional del sistema descrito en el Acta de Constitución del Proyecto
 
 ```bash
 npm install
+cp .env.example .env     # configura DATABASE_URL y AUTH_SECRET (ver abajo)
 npx prisma migrate dev   # crea/actualiza la base de datos SQLite
 npm run db:seed          # carga usuarios y datos de ejemplo
 npm run dev              # http://localhost:3000
 ```
+
+### Variables de entorno
+
+El repo no incluye `.env` (está en `.gitignore`); hay que crearlo a partir
+de `.env.example`:
+
+| Variable       | Requerida | Descripción                                                                 |
+| -------------- | :-------: | ---------------------------------------------------------------------------- |
+| `DATABASE_URL` |    Sí     | Ruta del archivo SQLite para Prisma. `file:./dev.db` funciona sin cambios.  |
+| `AUTH_SECRET`  |    Sí     | Secreto para firmar la sesión JWT. Sin él, cae a un valor inseguro hardcodeado — genera uno propio incluso en local (`openssl rand -base64 32`). |
+| `CRON_SECRET`  |    No     | Protege `/api/cron/reminders` si se engancha a un scheduler en producción. No es necesaria para uso local. |
 
 ## Usuarios de prueba (seed)
 
