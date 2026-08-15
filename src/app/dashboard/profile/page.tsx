@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ROLE_LABELS, type Role } from "@/lib/constants";
@@ -14,6 +15,13 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6 max-w-lg">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+      >
+        ← Volver
+      </Link>
+
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Mi perfil</h2>
         <p className="text-sm text-slate-500">
