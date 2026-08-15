@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { assignStudent } from "@/lib/actions";
 import { PROCESS_STATUSES, PROCESS_TYPE_LABELS, type ProcessType } from "@/lib/constants";
 
@@ -15,6 +15,13 @@ type StudentOption = {
 type AdvisorOption = { id: string; name: string; processType: string | null };
 type SimpleOption = { id: string; name: string };
 
+// Al asignar, el servidor revalida /dashboard y el formulario se vuelve a
+// montar con sus valores por defecto (el primer estudiante de la lista),
+// no necesariamente el que se acababa de editar. Se guarda la última
+// selección en sessionStorage para restaurarla apenas el formulario vuelve
+// a aparecer, en vez de "saltar" a otro estudiante.
+const STORAGE_KEY = "smart-app:assign-student-selected-id";
+
 export default function AssignStudentForm({
   students,
   advisors,
@@ -25,6 +32,23 @@ export default function AssignStudentForm({
   organizations: SimpleOption[];
 }) {
   const [selectedId, setSelectedId] = useState(students[0]?.id ?? "");
+
+  useEffect(() => {
+    // Se sincroniza después del montaje (no en el valor inicial de useState)
+    // para no leer sessionStorage durante el render en el servidor, lo que
+    // rompería la hidratación si el valor guardado difiere del default SSR.
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    if (stored && students.some((s) => s.id === stored)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza con sessionStorage tras el montaje, no puede calcularse en el render
+      setSelectedId(stored);
+    }
+  }, [students]);
+
+  function selectStudent(id: string) {
+    setSelectedId(id);
+    sessionStorage.setItem(STORAGE_KEY, id);
+  }
+
   const selected = students.find((s) => s.id === selectedId);
   const orgLocked = !!selected && selected.status !== PROCESS_STATUSES.NOT_STARTED;
   const currentOrgName =
@@ -42,7 +66,7 @@ export default function AssignStudentForm({
           name="studentProfileId"
           required
           value={selectedId}
-          onChange={(e) => setSelectedId(e.target.value)}
+          onChange={(e) => selectStudent(e.target.value)}
           className="border border-slate-300 rounded-md px-2 py-1.5 text-sm"
         >
           {students.map((s) => (
