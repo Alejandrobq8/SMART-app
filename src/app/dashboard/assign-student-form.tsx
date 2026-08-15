@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { assignStudent } from "@/lib/actions";
 import { PROCESS_STATUSES, PROCESS_TYPE_LABELS, type ProcessType } from "@/lib/constants";
 
@@ -15,6 +15,28 @@ type StudentOption = {
 type AdvisorOption = { id: string; name: string; processType: string | null };
 type SimpleOption = { id: string; name: string };
 
+type FormState = { status: "idle" | "error" | "success"; message: string | null };
+
+const initialState: FormState = { status: "idle", message: null };
+
+// assignStudent (server action) lanza en vez de devolver un resultado; acá
+// se atrapa ese error para poder mostrarlo dentro del formulario en vez de
+// dejar que reviente hasta el error boundary de la ruta.
+async function submitAssignment(
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    await assignStudent(formData);
+    return { status: "success", message: "Asignación actualizada." };
+  } catch (e) {
+    return {
+      status: "error",
+      message: e instanceof Error ? e.message : "Ocurrió un error inesperado.",
+    };
+  }
+}
+
 export default function AssignStudentForm({
   students,
   advisors,
@@ -28,6 +50,16 @@ export default function AssignStudentForm({
   // de arrancar apuntando al primero de la lista (fácil de asignar por
   // error a quien no corresponde).
   const [selectedId, setSelectedId] = useState("");
+  const [state, formAction, isPending] = useActionState(submitAssignment, initialState);
+
+  useEffect(() => {
+    // Tras un envío exitoso, vuelve a "No seleccionado" para forzar una
+    // elección explícita en la siguiente asignación.
+    if (state.status === "success") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reacciona al resultado de una acción async, no se puede calcular en el render
+      setSelectedId("");
+    }
+  }, [state]);
 
   const selected = students.find((s) => s.id === selectedId);
   const orgLocked = !!selected && selected.status !== PROCESS_STATUSES.NOT_STARTED;
@@ -39,7 +71,7 @@ export default function AssignStudentForm({
   const matchingAdvisors = advisors.filter((a) => a.processType === selected?.processType);
 
   return (
-    <form action={assignStudent} className="flex flex-wrap items-end gap-3">
+    <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div>
         <label className="block text-xs text-slate-500">Estudiante</label>
         <select
@@ -125,11 +157,20 @@ export default function AssignStudentForm({
       </div>
 
       <button
-        disabled={!selected}
+        disabled={!selected || isPending}
         className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed"
       >
-        Asignar
+        {isPending ? "Asignando…" : "Asignar"}
       </button>
+
+      {state.status === "error" && (
+        <p className="w-full text-sm text-red-600" role="alert">
+          {state.message}
+        </p>
+      )}
+      {state.status === "success" && (
+        <p className="w-full text-sm text-emerald-600">{state.message}</p>
+      )}
     </form>
   );
 }
