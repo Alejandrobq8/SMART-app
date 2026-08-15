@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { assignStudent } from "@/lib/actions";
-import { PROCESS_STATUSES } from "@/lib/constants";
+import { PROCESS_STATUSES, PROCESS_TYPE_LABELS, type ProcessType } from "@/lib/constants";
 
 type StudentOption = {
   id: string;
   name: string;
   status: string;
   organizationId: string | null;
+  processType: string;
 };
 
+type AdvisorOption = { id: string; name: string; processType: string | null };
 type SimpleOption = { id: string; name: string };
 
 export default function AssignStudentForm({
@@ -19,7 +21,7 @@ export default function AssignStudentForm({
   organizations,
 }: {
   students: StudentOption[];
-  advisors: SimpleOption[];
+  advisors: AdvisorOption[];
   organizations: SimpleOption[];
 }) {
   const [selectedId, setSelectedId] = useState(students[0]?.id ?? "");
@@ -27,6 +29,10 @@ export default function AssignStudentForm({
   const orgLocked = !!selected && selected.status !== PROCESS_STATUSES.NOT_STARTED;
   const currentOrgName =
     organizations.find((o) => o.id === selected?.organizationId)?.name ?? "Sin asignar";
+
+  // Un asesor solo atiende un tipo de proceso: solo se ofrecen los que
+  // coinciden con el proceso del estudiante seleccionado.
+  const matchingAdvisors = advisors.filter((a) => a.processType === selected?.processType);
 
   return (
     <form action={assignStudent} className="flex flex-wrap items-end gap-3">
@@ -48,15 +54,28 @@ export default function AssignStudentForm({
       </div>
 
       <div>
-        <label className="block text-xs text-slate-500">Profesor asesor</label>
-        <select name="advisorId" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+        <label className="block text-xs text-slate-500">
+          Profesor asesor
+          {selected && (
+            <span className="text-slate-400">
+              {" "}
+              ({PROCESS_TYPE_LABELS[selected.processType as ProcessType]})
+            </span>
+          )}
+        </label>
+        <select key={selectedId} name="advisorId" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
           <option value="">Sin asignar</option>
-          {advisors.map((a) => (
+          {matchingAdvisors.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name}
             </option>
           ))}
         </select>
+        {selected && matchingAdvisors.length === 0 && (
+          <p className="text-xs text-amber-600 mt-1">
+            No hay asesores registrados para {PROCESS_TYPE_LABELS[selected.processType as ProcessType]}.
+          </p>
+        )}
       </div>
 
       <div>

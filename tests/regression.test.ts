@@ -9,13 +9,14 @@ import {
 import { studentSelectorEmptyMessage } from "@/lib/ui-copy";
 import { mockGetSession } from "./setup";
 
-async function createAdvisor() {
+async function createAdvisor(processType: string = "TCU") {
   return prisma.user.create({
     data: {
       name: "Asesor de prueba",
       email: `advisor-${crypto.randomUUID()}@test.local`,
       passwordHash: "x",
       role: "ADVISOR",
+      advisorProcessType: processType,
     },
   });
 }

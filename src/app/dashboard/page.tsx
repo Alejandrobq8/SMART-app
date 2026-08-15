@@ -726,8 +726,13 @@ async function CoordinationDashboard({
             name: s.user.name,
             status: s.status,
             organizationId: s.organizationId,
+            processType: s.processType,
           }))}
-          advisors={advisors.map((a) => ({ id: a.id, name: a.name }))}
+          advisors={advisors.map((a) => ({
+            id: a.id,
+            name: a.name,
+            processType: a.advisorProcessType,
+          }))}
           organizations={organizations.map((o) => ({ id: o.id, name: o.name }))}
         />
       </Card>
@@ -842,6 +847,17 @@ async function CoordinationDashboard({
                     <label className="block text-xs text-slate-500">Rol</label>
                     <select name="role" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
                       {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">
+                      Proceso que atiende (solo Asesor)
+                    </label>
+                    <select name="advisorProcessType" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                      <option value="">No aplica</option>
+                      {Object.entries(PROCESS_TYPE_LABELS).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
                       ))}
                     </select>

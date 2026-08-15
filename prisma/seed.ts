@@ -22,12 +22,23 @@ async function main() {
     },
   });
 
-  const asesor = await prisma.user.create({
+  const asesorTcu = await prisma.user.create({
     data: {
       name: "María Fernández Solano",
       email: "asesor@ulacit.ac.cr",
       passwordHash: password,
       role: "ADVISOR",
+      advisorProcessType: "TCU",
+    },
+  });
+
+  const asesorPractica = await prisma.user.create({
+    data: {
+      name: "Luis Gerardo Araya Mora",
+      email: "asesor-practica@ulacit.ac.cr",
+      passwordHash: password,
+      role: "ADVISOR",
+      advisorProcessType: "PRACTICE",
     },
   });
 
@@ -83,7 +94,7 @@ async function main() {
       processType: "TCU",
       requiredHours: 150,
       status: "IN_PROGRESS",
-      advisorId: asesor.id,
+      advisorId: asesorTcu.id,
       organizationId: organization.id,
     },
   });
@@ -95,7 +106,7 @@ async function main() {
       career: "Administración de Negocios",
       processType: "PRACTICE",
       requiredHours: 300,
-      advisorId: asesor.id,
+      advisorId: asesorPractica.id,
     },
   });
 
@@ -106,7 +117,7 @@ async function main() {
       hours: 8,
       description: "Levantamiento de necesidades con la organización",
       status: "APPROVED",
-      approvedById: asesor.id,
+      approvedById: asesorTcu.id,
       approvedAt: new Date("2026-06-16"),
     },
   });
@@ -128,7 +139,7 @@ async function main() {
       description: "Documento inicial con cronograma y actividades",
       fileName: "plan-trabajo-tcu.pdf",
       status: "APPROVED",
-      reviewedById: asesor.id,
+      reviewedById: asesorTcu.id,
       reviewedAt: new Date("2026-06-18"),
     },
   });
@@ -152,7 +163,8 @@ async function main() {
 
   console.log("Seed completado.");
   console.log("Coordinación:", coordinacion.email);
-  console.log("Asesor:", asesor.email);
+  console.log("Asesor (TCU):", asesorTcu.email);
+  console.log("Asesor (Práctica):", asesorPractica.email);
   console.log("Organización:", orgContact.email);
   console.log("Admin:", admin.email);
   console.log("Estudiante:", estudiante.email);

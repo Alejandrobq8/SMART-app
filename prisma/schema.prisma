@@ -27,6 +27,10 @@ model User {
   phone        String?
   createdAt    DateTime @default(now())
 
+  // Solo relevante si role = ADVISOR: de momento un asesor solo puede
+  // atender un tipo de proceso (TCU o PRACTICE), no ambos.
+  advisorProcessType String?
+
   // Perfil de estudiante (solo si role = STUDENT)
   studentProfile StudentProfile?
 

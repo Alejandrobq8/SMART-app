@@ -248,6 +248,20 @@ export async function assignStudent(formData: FormData) {
     );
   }
 
+  if (advisorId) {
+    const advisor = await prisma.user.findUnique({ where: { id: advisorId } });
+    if (!advisor || advisor.role !== ROLES.ADVISOR) {
+      throw new Error("El usuario seleccionado no es un profesor asesor.");
+    }
+    if (advisor.advisorProcessType !== current.processType) {
+      throw new Error(
+        `${advisor.name} atiende ${advisor.advisorProcessType === "TCU" ? "TCU" : "Práctica profesional"}, no ${
+          current.processType === "TCU" ? "TCU" : "Práctica profesional"
+        }. Un asesor solo puede atender un tipo de proceso.`
+      );
+    }
+  }
+
   const profile = await prisma.studentProfile.update({
     where: { id: studentProfileId },
     data: {
@@ -286,9 +300,15 @@ export async function createUser(formData: FormData) {
   const email = String(formData.get("email"));
   const password = String(formData.get("password"));
   const role = String(formData.get("role"));
+  const advisorProcessType = String(formData.get("advisorProcessType") ?? "");
 
   if (!name || !email || !password || !role) {
     throw new Error("Todos los campos son requeridos.");
+  }
+  if (role === ROLES.ADVISOR && !advisorProcessType) {
+    throw new Error(
+      "Debes indicar si el asesor atiende TCU o Práctica profesional: de momento un asesor solo puede atender un tipo de proceso."
+    );
   }
 
   await prisma.user.create({
@@ -297,6 +317,7 @@ export async function createUser(formData: FormData) {
       email,
       role,
       passwordHash: await hashPassword(password),
+      advisorProcessType: role === ROLES.ADVISOR ? advisorProcessType : null,
     },
   });
 
