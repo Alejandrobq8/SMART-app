@@ -325,6 +325,13 @@ export async function createStudentProfile(formData: FormData) {
     throw new Error("Todos los campos son requeridos.");
   }
 
+  const existing = await prisma.studentProfile.findUnique({ where: { userId } });
+  if (existing) {
+    throw new Error(
+      "Este usuario ya tiene un expediente. Un estudiante no puede tener TCU y Práctica profesional a la vez."
+    );
+  }
+
   await prisma.studentProfile.create({
     data: {
       userId,
