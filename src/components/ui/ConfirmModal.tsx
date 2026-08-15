@@ -43,7 +43,7 @@ export default function ConfirmModal({
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-body"
-        className="w-full max-w-sm bg-white rounded-xl border border-slate-200 shadow-lg p-6 transition-all"
+        className="w-full max-w-sm bg-white rounded-2xl border border-slate-200 shadow-xl p-6 transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="confirm-modal-title" className="text-sm font-semibold text-slate-900">

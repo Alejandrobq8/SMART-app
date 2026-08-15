@@ -1,14 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f7fb;
-  --foreground: #131c31;
+  /* "Piedra de campus": un fondo neutro-frío tipo piedra caliza, no el
+     típico SaaS azul-gris ni el cliché crema+serif+terracota. */
+  --background: #f3f4ef;
+  --foreground: #1c2320;
   --surface: #ffffff;
-  --border: #dde3f0;
-  --muted: #5b6478;
-  --accent: #1e40af;
-  --accent-soft: #eef2ff;
+  --border: #e1e4dc;
+  --muted: #5b655e;
+  --accent: #1b6b58;
+  --accent-soft: #e6f0ec;
   --accent-foreground: #ffffff;
+
+  /* Acento secundario: distingue Práctica Profesional de TCU (que usa
+     --accent). Cálido/terracota, deliberadamente distinto del verde
+     bosque primario para que ambos procesos se reconozcan de un vistazo. */
+  --clay: #b5623a;
+  --clay-soft: #f6eae1;
+
   --status-pending: #b45309;
   --status-pending-bg: #fffbeb;
   --status-pending-border: #fde68a;
@@ -26,14 +35,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1220;
-    --foreground: #e6eaf5;
-    --surface: #131c2e;
-    --border: #263244;
-    --muted: #97a2ba;
-    --accent: #93a9f5;
-    --accent-soft: #1a2444;
-    --accent-foreground: #0b1220;
+    --background: #141e1a;
+    --foreground: #e8ece7;
+    --surface: #1b2622;
+    --border: #2c3a34;
+    --muted: #9aa69e;
+    --accent: #4fae93;
+    --accent-soft: #1d3a31;
+    --accent-foreground: #0d1512;
+
+    --clay: #e0895a;
+    --clay-soft: #3a2419;
+
     --status-pending: #fbbf24;
     --status-pending-bg: #3f2d0a;
     --status-pending-border: #78500f;
@@ -91,6 +104,7 @@
   --color-accent: var(--accent);
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
 }
 
 body {
@@ -106,6 +120,13 @@ h2,
 h3 {
   font-family: var(--font-serif), ui-serif, Georgia, serif;
   letter-spacing: -0.01em;
+}
+
+/* Datos de expediente (carné, horas, fechas) en monoespaciada: refuerza
+   la sensación de "registro oficial" — se usa vía la clase .font-record. */
+.font-record {
+  font-family: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+  font-feature-settings: "tnum" 1;
 }
 
 /* Reskin del color de acento: en vez de anotar el nuevo color de marca en

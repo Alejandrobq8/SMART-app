@@ -14,7 +14,7 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="text-sm text-slate-500 hover:text-slate-900 border border-slate-200 rounded-md px-3 py-1.5"
+      className="text-sm text-slate-500 hover:text-slate-900 border border-slate-200 rounded-lg px-3 py-1.5 transition-colors hover:border-slate-300"
     >
       Cerrar sesión
     </button>

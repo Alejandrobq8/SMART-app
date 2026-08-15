@@ -73,13 +73,13 @@ export default function AssignStudentForm({
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div>
-        <label className="block text-xs text-slate-500">Estudiante</label>
+        <label className="block text-xs font-medium text-slate-500 mb-1">Estudiante</label>
         <select
           name="studentProfileId"
           required
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
-          className="border border-slate-300 rounded-md px-2 py-1.5 text-sm"
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors"
         >
           <option value="" disabled>
             No seleccionado
@@ -93,7 +93,7 @@ export default function AssignStudentForm({
       </div>
 
       <div>
-        <label className="block text-xs text-slate-500">
+        <label className="block text-xs font-medium text-slate-500 mb-1">
           Profesor asesor
           {selected && (
             <span className="text-slate-400">
@@ -106,7 +106,7 @@ export default function AssignStudentForm({
           key={selectedId}
           name="advisorId"
           disabled={!selected}
-          className="border border-slate-300 rounded-md px-2 py-1.5 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
         >
           <option value="">Sin asignar</option>
           {matchingAdvisors.map((a) => (
@@ -123,7 +123,7 @@ export default function AssignStudentForm({
       </div>
 
       <div>
-        <label className="block text-xs text-slate-500">
+        <label className="block text-xs font-medium text-slate-500 mb-1">
           Organización
           {orgLocked && <span className="text-amber-600"> — proceso en curso, no editable</span>}
         </label>
@@ -132,7 +132,7 @@ export default function AssignStudentForm({
             <select
               disabled
               value={currentOrgName}
-              className="border border-slate-200 bg-slate-100 text-slate-400 rounded-md px-2 py-1.5 text-sm cursor-not-allowed"
+              className="border border-slate-200 bg-slate-100 text-slate-400 rounded-lg px-3 py-2 text-sm cursor-not-allowed"
             >
               <option>{currentOrgName}</option>
             </select>
@@ -144,7 +144,7 @@ export default function AssignStudentForm({
             name="organizationId"
             disabled={!selected}
             defaultValue={selected?.organizationId ?? ""}
-            className="border border-slate-300 rounded-md px-2 py-1.5 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
           >
             <option value="">Sin asignar</option>
             {organizations.map((o) => (
@@ -158,7 +158,7 @@ export default function AssignStudentForm({
 
       <button
         disabled={!selected || isPending}
-        className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed"
+        className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
       >
         {isPending ? "Asignando…" : "Asignar"}
       </button>

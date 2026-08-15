@@ -46,7 +46,8 @@ export default function ReviewRow({
     <>
       <form
         ref={formRef}
-        className="flex flex-wrap items-center gap-3 text-sm border border-slate-100 rounded-md p-3 transition-colors hover:border-slate-200"
+        className="flex flex-wrap items-center gap-3 text-sm rounded-lg p-3.5 transition-colors"
+        style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}
       >
         {Object.entries(hiddenFields).map(([key, value]) => (
           <input key={key} type="hidden" name={key} value={value} />

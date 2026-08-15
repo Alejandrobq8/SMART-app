@@ -19,7 +19,8 @@ export default function Tabs({ tabs }: { tabs: TabItem[] }) {
       <div
         role="tablist"
         aria-label="Secciones"
-        className="flex flex-wrap gap-1 border-b border-slate-200 mb-6 -mt-1"
+        className="flex flex-wrap gap-1 mb-6 -mt-1"
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
         {tabs.map((t) => {
           const isActive = active === t.id;
@@ -30,11 +31,8 @@ export default function Tabs({ tabs }: { tabs: TabItem[] }) {
               role="tab"
               aria-selected={isActive}
               onClick={() => setActive(t.id)}
-              className={`relative flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? "text-[var(--accent)]"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
+              className="relative flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium transition-colors hover:opacity-75"
+              style={{ color: isActive ? "var(--accent)" : "var(--muted)" }}
             >
               {t.icon && <Icon name={t.icon} className="w-4 h-4" />}
               {t.label}

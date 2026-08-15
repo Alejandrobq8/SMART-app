@@ -25,11 +25,12 @@ export default function ProgressBar({
       aria-valuenow={percent}
       aria-valuemin={0}
       aria-valuemax={100}
-      className="w-full h-2 bg-slate-100 rounded-full mt-1 overflow-hidden"
+      className="w-full h-2.5 rounded-full mt-1.5 overflow-hidden"
+      style={{ backgroundColor: "var(--accent-soft)" }}
     >
       <div
-        className="h-2 bg-slate-900 rounded-full transition-[width] duration-700 ease-out"
-        style={{ width: `${width}%` }}
+        className="h-2.5 rounded-full transition-[width] duration-700 ease-out"
+        style={{ width: `${width}%`, backgroundColor: "var(--accent)" }}
       />
     </div>
   );

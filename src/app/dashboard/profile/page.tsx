@@ -17,27 +17,35 @@ export default async function ProfilePage() {
     <div className="space-y-6 max-w-lg">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 transition-colors"
       >
-        ← Volver
+        <span aria-hidden="true">←</span> Volver
       </Link>
 
       <div>
+        <p
+          className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1"
+          style={{ color: "var(--accent)" }}
+        >
+          {ROLE_LABELS[session.role as Role]}
+        </p>
         <h2 className="text-xl font-semibold text-slate-900">Mi perfil</h2>
-        <p className="text-sm text-slate-500">
-          Datos personales — {ROLE_LABELS[session.role as Role]}. Los datos
-          del expediente académico (carné, carrera, asesor, organización)
+        <p className="text-sm text-slate-500 mt-1">
+          Los datos del expediente académico (carné, carrera, asesor, organización)
           solo puede modificarlos Coordinación.
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div
+        className="bg-white rounded-2xl p-6 shadow-[0_1px_2px_rgba(28,35,32,0.04)]"
+        style={{ border: "1px solid var(--border)" }}
+      >
         <h3 className="text-sm font-semibold text-slate-900 mb-4">
           Datos personales
         </h3>
-        <form action={updateProfile} className="space-y-3">
+        <form action={updateProfile} className="space-y-4">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               Nombre completo
             </label>
             <input
@@ -45,22 +53,22 @@ export default async function ProfilePage() {
               name="name"
               required
               defaultValue={user.name}
-              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full"
+              className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               Correo (no editable)
             </label>
             <input
               type="email"
               value={user.email}
               disabled
-              className="border border-slate-200 bg-slate-50 text-slate-400 rounded-md px-2 py-1.5 text-sm w-full"
+              className="border border-slate-200 bg-slate-50 text-slate-400 rounded-lg px-3 py-2 text-sm w-full"
             />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               Teléfono
             </label>
             <input
@@ -68,33 +76,36 @@ export default async function ProfilePage() {
               name="phone"
               defaultValue={user.phone ?? ""}
               placeholder="Ej. 8888-8888"
-              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full"
+              className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full transition-colors"
             />
           </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+          <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
             Guardar cambios
           </button>
         </form>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div
+        className="bg-white rounded-2xl p-6 shadow-[0_1px_2px_rgba(28,35,32,0.04)]"
+        style={{ border: "1px solid var(--border)" }}
+      >
         <h3 className="text-sm font-semibold text-slate-900 mb-4">
           Cambiar contraseña
         </h3>
-        <form action={changePassword} className="space-y-3">
+        <form action={changePassword} className="space-y-4">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               Contraseña actual
             </label>
             <input
               type="password"
               name="currentPassword"
               required
-              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full"
+              className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               Nueva contraseña
             </label>
             <input
@@ -102,10 +113,10 @@ export default async function ProfilePage() {
               name="newPassword"
               required
               minLength={6}
-              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full"
+              className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full transition-colors"
             />
           </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+          <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
             Cambiar contraseña
           </button>
         </form>

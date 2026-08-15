@@ -10,7 +10,6 @@ import {
   type DeliverableStatus,
   type HoursStatus,
   type ProcessStatus,
-  type ProcessType,
   type Role,
 } from "@/lib/constants";
 import {
@@ -31,6 +30,8 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import EmptyState from "@/components/ui/EmptyState";
 import ReviewRow from "@/components/ui/ReviewRow";
 import Tabs from "@/components/ui/Tabs";
+import ProcessTag from "@/components/ui/ProcessTag";
+import StageTracker from "@/components/ui/StageTracker";
 
 function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" | "red" | "gray" }) {
   const tones: Record<string, string> = {
@@ -40,7 +41,7 @@ function StatusBadge({ label, tone }: { label: string; tone: "green" | "yellow" 
     gray: "bg-slate-100 text-slate-600 border-slate-200",
   };
   return (
-    <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${tones[tone]}`}>
+    <span className={`inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full border ${tones[tone]}`}>
       {label}
     </span>
   );
@@ -65,10 +66,29 @@ function processTone(status: string) {
   return "yellow" as const;
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  title,
+  eyebrow,
+  children,
+}: {
+  title: string;
+  eyebrow?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="bg-white rounded-xl border border-slate-200 p-6">
-      <h2 className="text-base font-semibold text-slate-900 mb-4">{title}</h2>
+    <section
+      className="bg-white rounded-2xl p-6 sm:p-7 shadow-[0_1px_2px_rgba(28,35,32,0.04)]"
+      style={{ border: "1px solid var(--border)" }}
+    >
+      {eyebrow && (
+        <p
+          className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1.5"
+          style={{ color: "var(--accent)" }}
+        >
+          {eyebrow}
+        </p>
+      )}
+      <h2 className="text-lg font-semibold text-slate-900 mb-4">{title}</h2>
       {children}
     </section>
   );
@@ -144,28 +164,33 @@ async function StudentDashboard({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
-      <Card title="Mi expediente">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+      <section
+        className="bg-white rounded-2xl p-6 sm:p-7 shadow-[0_1px_2px_rgba(28,35,32,0.04)]"
+        style={{ border: "1px solid var(--border)" }}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+          <div>
+            <ProcessTag type={profile.processType} />
+            <h2 className="text-lg font-semibold text-slate-900 mt-1">Mi expediente</h2>
+          </div>
+          <StatusBadge
+            label={PROCESS_STATUS_LABELS[profile.status as ProcessStatus]}
+            tone={processTone(profile.status)}
+          />
+        </div>
+
+        <div className="mb-7">
+          <StageTracker status={profile.status} />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 text-sm mb-6">
           <div>
             <p className="text-slate-400">Carné</p>
-            <p className="font-medium text-slate-900">{profile.studentCode}</p>
+            <p className="font-record font-medium text-slate-900">{profile.studentCode}</p>
           </div>
           <div>
             <p className="text-slate-400">Carrera</p>
             <p className="font-medium text-slate-900">{profile.career}</p>
-          </div>
-          <div>
-            <p className="text-slate-400">Proceso</p>
-            <p className="font-medium text-slate-900">
-              {PROCESS_TYPE_LABELS[profile.processType as ProcessType]}
-            </p>
-          </div>
-          <div>
-            <p className="text-slate-400">Estado</p>
-            <StatusBadge
-              label={PROCESS_STATUS_LABELS[profile.status as ProcessStatus]}
-              tone={processTone(profile.status)}
-            />
           </div>
           <div>
             <p className="text-slate-400">Profesor asesor</p>
@@ -175,18 +200,25 @@ async function StudentDashboard({ userId }: { userId: string }) {
             <p className="text-slate-400">Organización</p>
             <p className="font-medium text-slate-900">{profile.organization?.name ?? "Sin asignar"}</p>
           </div>
-          <div className="col-span-2">
-            <p className="text-slate-400">Horas aprobadas / requeridas</p>
-            <p className="font-medium text-slate-900">
-              {approvedHours} / {profile.requiredHours} h
-            </p>
-            <ProgressBar
-              percent={progressPct}
-              label={`Horas aprobadas: ${approvedHours} de ${profile.requiredHours}`}
-            />
-          </div>
         </div>
-      </Card>
+
+        <div
+          className="pt-5"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          <div className="flex items-baseline justify-between">
+            <p className="text-slate-400 text-sm">Horas aprobadas</p>
+            <p className="font-record text-sm">
+              <span className="font-semibold text-slate-900">{approvedHours}</span>
+              <span className="text-slate-400"> / {profile.requiredHours} h</span>
+            </p>
+          </div>
+          <ProgressBar
+            percent={progressPct}
+            label={`Horas aprobadas: ${approvedHours} de ${profile.requiredHours}`}
+          />
+        </div>
+      </section>
 
       <Tabs
         tabs={[
@@ -203,18 +235,18 @@ async function StudentDashboard({ userId }: { userId: string }) {
                 ) : (
                   <form action={logHours} className="flex flex-wrap items-end gap-3">
                     <div>
-                      <label className="block text-xs text-slate-500">Fecha</label>
-                      <input type="date" name="date" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Fecha</label>
+                      <input type="date" name="date" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-500">Horas</label>
-                      <input type="number" step="0.5" min="0.5" name="hours" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Horas</label>
+                      <input type="number" step="0.5" min="0.5" name="hours" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-24" />
                     </div>
                     <div className="flex-1 min-w-[200px]">
-                      <label className="block text-xs text-slate-500">Descripción</label>
-                      <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" placeholder="Actividad realizada" />
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
+                      <input type="text" name="description" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-full" placeholder="Actividad realizada" />
                     </div>
-                    <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+                    <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
                       Registrar
                     </button>
                   </form>
@@ -222,8 +254,8 @@ async function StudentDashboard({ userId }: { userId: string }) {
 
                 <table className="w-full text-sm mt-5">
                   <thead>
-                    <tr className="text-left text-slate-400 border-b border-slate-100">
-                      <th className="py-2">Fecha</th>
+                    <tr className="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide border-b border-slate-100">
+                      <th className="py-2.5">Fecha</th>
                       <th>Horas</th>
                       <th>Descripción</th>
                       <th>Estado</th>
@@ -231,9 +263,9 @@ async function StudentDashboard({ userId }: { userId: string }) {
                   </thead>
                   <tbody>
                     {profile.hoursLogs.map((h) => (
-                      <tr key={h.id} className="border-b border-slate-50">
-                        <td className="py-2">{h.date.toLocaleDateString("es-CR")}</td>
-                        <td>{h.hours}</td>
+                      <tr key={h.id} className="border-b border-slate-50 hover:bg-[var(--accent-soft)]/40 transition-colors">
+                        <td className="py-3 font-record text-slate-600">{h.date.toLocaleDateString("es-CR")}</td>
+                        <td className="font-record">{h.hours}</td>
                         <td className="text-slate-600">{h.description}</td>
                         <td>
                           <StatusBadge label={HOURS_STATUS_LABELS[h.status as HoursStatus]} tone={hoursTone(h.status)} />
@@ -265,18 +297,18 @@ async function StudentDashboard({ userId }: { userId: string }) {
                 ) : (
                   <form action={submitDeliverable} className="flex flex-wrap items-end gap-3">
                     <div className="flex-1 min-w-[180px]">
-                      <label className="block text-xs text-slate-500">Título</label>
-                      <input type="text" name="title" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Título</label>
+                      <input type="text" name="title" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-full" />
                     </div>
                     <div className="flex-1 min-w-[180px]">
-                      <label className="block text-xs text-slate-500">Descripción</label>
-                      <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
+                      <input type="text" name="description" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-full" />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-500">Archivo (nombre)</label>
-                      <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Archivo (nombre)</label>
+                      <input type="text" name="fileName" placeholder="informe.pdf" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
                     </div>
-                    <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+                    <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
                       Enviar
                     </button>
                   </form>
@@ -284,8 +316,8 @@ async function StudentDashboard({ userId }: { userId: string }) {
 
                 <table className="w-full text-sm mt-5">
                   <thead>
-                    <tr className="text-left text-slate-400 border-b border-slate-100">
-                      <th className="py-2">Título</th>
+                    <tr className="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide border-b border-slate-100">
+                      <th className="py-2.5">Título</th>
                       <th>Archivo</th>
                       <th>Estado</th>
                       <th>Comentario</th>
@@ -293,8 +325,8 @@ async function StudentDashboard({ userId }: { userId: string }) {
                   </thead>
                   <tbody>
                     {profile.deliverables.map((d) => (
-                      <tr key={d.id} className="border-b border-slate-50">
-                        <td className="py-2">{d.title}</td>
+                      <tr key={d.id} className="border-b border-slate-50 hover:bg-[var(--accent-soft)]/40 transition-colors">
+                        <td className="py-3">{d.title}</td>
                         <td className="text-slate-600">{d.fileName ?? "—"}</td>
                         <td>
                           <StatusBadge
@@ -384,8 +416,8 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
             <Card title="Estudiantes a cargo">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-slate-400 border-b border-slate-100">
-                    <th className="py-2">Estudiante</th>
+                  <tr className="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide border-b border-slate-100">
+                    <th className="py-2.5">Estudiante</th>
                     <th>Carrera</th>
                     <th>Proceso</th>
                     <th>Estado</th>
@@ -396,14 +428,16 @@ async function ReviewerDashboard({ userId, role }: { userId: string; role: Role 
                   {students.map((s) => {
                     const approved = s.hoursLogs.filter((h) => h.status === "APPROVED").reduce((a, h) => a + h.hours, 0);
                     return (
-                      <tr key={s.id} className="border-b border-slate-50">
-                        <td className="py-2">{s.user.name}</td>
+                      <tr key={s.id} className="border-b border-slate-50 hover:bg-[var(--accent-soft)]/40 transition-colors">
+                        <td className="py-3 font-medium text-slate-900">{s.user.name}</td>
                         <td>{s.career}</td>
-                        <td>{PROCESS_TYPE_LABELS[s.processType as ProcessType]}</td>
+                        <td>
+                          <ProcessTag type={s.processType} />
+                        </td>
                         <td>
                           <StatusBadge label={PROCESS_STATUS_LABELS[s.status as ProcessStatus]} tone={processTone(s.status)} />
                         </td>
-                        <td>{approved} / {s.requiredHours} h</td>
+                        <td className="font-record">{approved} / {s.requiredHours} h</td>
                       </tr>
                     );
                   })}
@@ -586,11 +620,17 @@ async function CoordinationDashboard({
       icon: "chart-bar" as const,
       content: (
       <Card title="Tablero general — estado de estudiantes">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-7">
           {Object.entries(PROCESS_STATUS_LABELS).map(([key, label]) => (
-            <div key={key} className="border border-slate-100 rounded-md p-3 text-center">
-              <p className="text-2xl font-semibold text-slate-900">{statusCounts[key] ?? 0}</p>
-              <p className="text-xs text-slate-500">{label}</p>
+            <div
+              key={key}
+              className="rounded-xl p-4 text-center"
+              style={{ border: "1px solid var(--border)", backgroundColor: "var(--accent-soft)" }}
+            >
+              <p className="text-2xl font-record font-semibold" style={{ color: "var(--accent)" }}>
+                {statusCounts[key] ?? 0}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">{label}</p>
             </div>
           ))}
         </div>
@@ -622,11 +662,9 @@ async function CoordinationDashboard({
             <p className="text-xs font-medium text-slate-500 mb-2">Por proceso</p>
             <ul className="text-sm space-y-1">
               {Object.entries(processTypeCounts).map(([processType, count]) => (
-                <li key={processType} className="flex justify-between border-b border-slate-50 py-1">
-                  <span className="text-slate-700">
-                    {PROCESS_TYPE_LABELS[processType as ProcessType] ?? processType}
-                  </span>
-                  <span className="text-slate-400">{count}</span>
+                <li key={processType} className="flex justify-between items-center border-b border-slate-50 py-1.5">
+                  <ProcessTag type={processType} />
+                  <span className="text-slate-400 font-record">{count}</span>
                 </li>
               ))}
             </ul>
@@ -635,8 +673,8 @@ async function CoordinationDashboard({
 
         <form method="GET" className="flex flex-wrap items-end gap-3 mb-4">
           <div>
-            <label className="block text-xs text-slate-500">Filtrar por carrera</label>
-            <select name="career" defaultValue={careerFilter} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+            <label className="block text-xs font-medium text-slate-500 mb-1">Filtrar por carrera</label>
+            <select name="career" defaultValue={careerFilter} className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
               <option value="">Todas</option>
               {careerOptions.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -644,8 +682,8 @@ async function CoordinationDashboard({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-slate-500">Filtrar por periodo</label>
-            <select name="period" defaultValue={periodFilter} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+            <label className="block text-xs font-medium text-slate-500 mb-1">Filtrar por periodo</label>
+            <select name="period" defaultValue={periodFilter} className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
               <option value="">Todos</option>
               {periodOptions.map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -653,15 +691,15 @@ async function CoordinationDashboard({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-slate-500">Filtrar por proceso</label>
-            <select name="processType" defaultValue={processTypeFilter} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+            <label className="block text-xs font-medium text-slate-500 mb-1">Filtrar por proceso</label>
+            <select name="processType" defaultValue={processTypeFilter} className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
               <option value="">Todos</option>
               {Object.entries(PROCESS_TYPE_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
           </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+          <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
             Filtrar
           </button>
           {(careerFilter || periodFilter || processTypeFilter) && (
@@ -673,8 +711,8 @@ async function CoordinationDashboard({
 
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-400 border-b border-slate-100">
-              <th className="py-2">Estudiante</th>
+            <tr className="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide border-b border-slate-100">
+              <th className="py-2.5">Estudiante</th>
               <th>Carrera</th>
               <th>Proceso</th>
               <th>Periodo</th>
@@ -688,17 +726,19 @@ async function CoordinationDashboard({
             {students.map((s) => {
               const approved = s.hoursLogs.filter((h) => h.status === "APPROVED").reduce((a, h) => a + h.hours, 0);
               return (
-                <tr key={s.id} className="border-b border-slate-50">
-                  <td className="py-2">{s.user.name}</td>
+                <tr key={s.id} className="border-b border-slate-50 hover:bg-[var(--accent-soft)]/40 transition-colors">
+                  <td className="py-3 font-medium text-slate-900">{s.user.name}</td>
                   <td>{s.career}</td>
-                  <td>{PROCESS_TYPE_LABELS[s.processType as ProcessType]}</td>
-                  <td>{s.period ?? "—"}</td>
+                  <td>
+                    <ProcessTag type={s.processType} />
+                  </td>
+                  <td className="font-record text-slate-600">{s.period ?? "—"}</td>
                   <td>{s.advisor?.name ?? "—"}</td>
                   <td>{s.organization?.name ?? "—"}</td>
                   <td>
                     <StatusBadge label={PROCESS_STATUS_LABELS[s.status as ProcessStatus]} tone={processTone(s.status)} />
                   </td>
-                  <td>{approved} / {s.requiredHours} h</td>
+                  <td className="font-record">{approved} / {s.requiredHours} h</td>
                 </tr>
               );
             })}
@@ -751,8 +791,8 @@ async function CoordinationDashboard({
         ) : (
           <form action={createStudentProfile} className="flex flex-wrap items-end gap-3">
             <div>
-              <label className="block text-xs text-slate-500">Usuario (estudiante)</label>
-              <select name="userId" required defaultValue="" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Usuario (estudiante)</label>
+              <select name="userId" required defaultValue="" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
                 <option value="" disabled>
                   Selecciona un estudiante
                 </option>
@@ -762,29 +802,29 @@ async function CoordinationDashboard({
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-500">Carné</label>
-              <input type="text" name="studentCode" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-28" />
+              <label className="block text-xs font-medium text-slate-500 mb-1">Carné</label>
+              <input type="text" name="studentCode" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-28" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500">Carrera</label>
-              <input type="text" name="career" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+              <label className="block text-xs font-medium text-slate-500 mb-1">Carrera</label>
+              <input type="text" name="career" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500">Proceso</label>
-              <select name="processType" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Proceso</label>
+              <select name="processType" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
                 <option value="PRACTICE">Práctica profesional</option>
                 <option value="TCU">TCU</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-500">Periodo</label>
-              <input type="text" name="period" placeholder="Ej. 2026-1" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
+              <label className="block text-xs font-medium text-slate-500 mb-1">Periodo</label>
+              <input type="text" name="period" placeholder="Ej. 2026-1" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-24" />
             </div>
             <div>
-              <label className="block text-xs text-slate-500">Horas requeridas</label>
-              <input type="number" name="requiredHours" defaultValue={150} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-24" />
+              <label className="block text-xs font-medium text-slate-500 mb-1">Horas requeridas</label>
+              <input type="number" name="requiredHours" defaultValue={150} className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-24" />
             </div>
-            <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+            <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
               Crear
             </button>
           </form>
@@ -800,24 +840,27 @@ async function CoordinationDashboard({
       <Card title="Organizaciones externas">
         <form action={createOrganization} className="flex flex-wrap items-end gap-3 mb-5">
           <div>
-            <label className="block text-xs text-slate-500">Nombre</label>
-            <input type="text" name="name" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+            <label className="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
+            <input type="text" name="name" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
           </div>
           <div className="flex-1 min-w-[180px]">
-            <label className="block text-xs text-slate-500">Descripción</label>
-            <input type="text" name="description" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm w-full" />
+            <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
+            <input type="text" name="description" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors w-full" />
           </div>
-          <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+          <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
             Crear organización
           </button>
         </form>
-        <ul className="text-sm space-y-1">
+        <ul className="text-sm divide-y divide-slate-100">
           {organizations.map((o) => (
-            <li key={o.id} className="text-slate-700">
-              <span className="font-medium">{o.name}</span>
+            <li key={o.id} className="text-slate-700 py-2.5">
+              <span className="font-medium text-slate-900">{o.name}</span>
               {o.description && <span className="text-slate-400"> — {o.description}</span>}
             </li>
           ))}
+          {organizations.length === 0 && (
+            <li className="text-slate-400 py-2.5">Aún no hay organizaciones registradas.</li>
+          )}
         </ul>
       </Card>
       ),
@@ -832,37 +875,37 @@ async function CoordinationDashboard({
               <Card title="Administración de usuarios">
                 <form action={createUser} className="flex flex-wrap items-end gap-3">
                   <div>
-                    <label className="block text-xs text-slate-500">Nombre</label>
-                    <input type="text" name="name" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
+                    <input type="text" name="name" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Correo</label>
-                    <input type="email" name="email" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Correo</label>
+                    <input type="email" name="email" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Contraseña</label>
-                    <input type="text" name="password" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm" />
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Contraseña</label>
+                    <input type="text" name="password" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Rol</label>
-                    <select name="role" required className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Rol</label>
+                    <select name="role" required className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
                       {Object.entries(ROLE_LABELS).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">
+                    <label className="block text-xs font-medium text-slate-500 mb-1">
                       Proceso que atiende (solo Asesor)
                     </label>
-                    <select name="advisorProcessType" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                    <select name="advisorProcessType" className="border border-slate-300 rounded-lg px-3 py-2 text-sm transition-colors">
                       <option value="">No aplica</option>
                       {Object.entries(PROCESS_TYPE_LABELS).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
                       ))}
                     </select>
                   </div>
-                  <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+                  <button className="bg-slate-900 text-white text-sm font-medium rounded-lg px-4 py-2 hover:bg-slate-800 transition-colors">
                     Crear usuario
                   </button>
                 </form>
