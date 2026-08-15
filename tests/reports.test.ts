@@ -7,10 +7,10 @@ import {
 } from "@/lib/reports";
 
 const profiles: ReportableProfile[] = [
-  { career: "Ingeniería en Sistemas", period: "2026-1", status: "IN_PROGRESS" },
-  { career: "Ingeniería en Sistemas", period: "2026-1", status: "COMPLETED" },
-  { career: "Administración de Negocios", period: "2026-1", status: "NOT_STARTED" },
-  { career: "Administración de Negocios", period: null, status: "IN_PROGRESS" },
+  { career: "Ingeniería en Sistemas", period: "2026-1", status: "IN_PROGRESS", processType: "TCU" },
+  { career: "Ingeniería en Sistemas", period: "2026-1", status: "COMPLETED", processType: "PRACTICE" },
+  { career: "Administración de Negocios", period: "2026-1", status: "NOT_STARTED", processType: "TCU" },
+  { career: "Administración de Negocios", period: null, status: "IN_PROGRESS", processType: "PRACTICE" },
 ];
 
 describe("countByKey", () => {
@@ -51,6 +51,21 @@ describe("filterProfiles", () => {
 
   it("sin filtros devuelve todo", () => {
     expect(filterProfiles(profiles, {})).toHaveLength(4);
+  });
+
+  it("filtra por tipo de proceso", () => {
+    const result = filterProfiles(profiles, { processType: "TCU" });
+    expect(result).toHaveLength(2);
+    expect(result.every((p) => p.processType === "TCU")).toBe(true);
+  });
+});
+
+describe("countByKey — por tipo de proceso", () => {
+  it("agrupa por tipo de proceso", () => {
+    expect(countByKey(profiles, "processType")).toEqual({
+      TCU: 2,
+      PRACTICE: 2,
+    });
   });
 });
 

@@ -539,7 +539,7 @@ async function CoordinationDashboard({
 }: {
   userId: string;
   role: Role;
-  searchParams: { career?: string; period?: string };
+  searchParams: { career?: string; period?: string; processType?: string };
 }) {
   try {
     await runOverdueReminders();
@@ -560,9 +560,11 @@ async function CoordinationDashboard({
 
   const careerFilter = searchParams.career ?? "";
   const periodFilter = searchParams.period ?? "";
+  const processTypeFilter = searchParams.processType ?? "";
   const students = filterProfiles(allStudents, {
     career: careerFilter || undefined,
     period: periodFilter || undefined,
+    processType: processTypeFilter || undefined,
   });
 
   const statusCounts = students.reduce<Record<string, number>>((acc, s) => {
@@ -571,6 +573,7 @@ async function CoordinationDashboard({
   }, {});
   const careerCounts = countByKey(allStudents, "career");
   const periodCounts = countByKey(allStudents, "period");
+  const processTypeCounts = countByKey(allStudents, "processType");
   const careerOptions = distinctValues(allStudents, "career");
   const periodOptions = distinctValues(allStudents, "period");
 
@@ -592,7 +595,7 @@ async function CoordinationDashboard({
           ))}
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 mb-6">
+        <div className="grid sm:grid-cols-3 gap-4 mb-6">
           <div>
             <p className="text-xs font-medium text-slate-500 mb-2">Por carrera</p>
             <ul className="text-sm space-y-1">
@@ -610,6 +613,19 @@ async function CoordinationDashboard({
               {Object.entries(periodCounts).map(([period, count]) => (
                 <li key={period} className="flex justify-between border-b border-slate-50 py-1">
                   <span className="text-slate-700">{period}</span>
+                  <span className="text-slate-400">{count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 mb-2">Por proceso</p>
+            <ul className="text-sm space-y-1">
+              {Object.entries(processTypeCounts).map(([processType, count]) => (
+                <li key={processType} className="flex justify-between border-b border-slate-50 py-1">
+                  <span className="text-slate-700">
+                    {PROCESS_TYPE_LABELS[processType as ProcessType] ?? processType}
+                  </span>
                   <span className="text-slate-400">{count}</span>
                 </li>
               ))}
@@ -636,10 +652,19 @@ async function CoordinationDashboard({
               ))}
             </select>
           </div>
+          <div>
+            <label className="block text-xs text-slate-500">Filtrar por proceso</label>
+            <select name="processType" defaultValue={processTypeFilter} className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+              <option value="">Todos</option>
+              {Object.entries(PROCESS_TYPE_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
           <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
             Filtrar
           </button>
-          {(careerFilter || periodFilter) && (
+          {(careerFilter || periodFilter || processTypeFilter) && (
             <a href="/dashboard" className="text-xs text-slate-500 underline">
               Limpiar filtros
             </a>
@@ -651,6 +676,7 @@ async function CoordinationDashboard({
             <tr className="text-left text-slate-400 border-b border-slate-100">
               <th className="py-2">Estudiante</th>
               <th>Carrera</th>
+              <th>Proceso</th>
               <th>Periodo</th>
               <th>Asesor</th>
               <th>Organización</th>
@@ -665,6 +691,7 @@ async function CoordinationDashboard({
                 <tr key={s.id} className="border-b border-slate-50">
                   <td className="py-2">{s.user.name}</td>
                   <td>{s.career}</td>
+                  <td>{PROCESS_TYPE_LABELS[s.processType as ProcessType]}</td>
                   <td>{s.period ?? "—"}</td>
                   <td>{s.advisor?.name ?? "—"}</td>
                   <td>{s.organization?.name ?? "—"}</td>
@@ -677,7 +704,7 @@ async function CoordinationDashboard({
             })}
             {students.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-4 text-center text-slate-400">
+                <td colSpan={8} className="py-4 text-center text-slate-400">
                   No hay expedientes que coincidan con el filtro.
                 </td>
               </tr>
@@ -847,7 +874,7 @@ async function CoordinationDashboard({
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ career?: string; period?: string }>;
+  searchParams: Promise<{ career?: string; period?: string; processType?: string }>;
 }) {
   const session = await getSession();
   if (!session) return null;
