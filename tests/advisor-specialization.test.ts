@@ -77,6 +77,32 @@ describe("assignStudent — especialización del asesor por tipo de proceso", ()
 
     await expect(assignStudent(formData)).resolves.not.toThrow();
   });
+
+  it("no revalida la especialidad si el asesor no cambia (asignación previa a esta regla)", async () => {
+    // Un asesor sin advisorProcessType (dato de antes de esta regla) ya
+    // asignado a un estudiante no debe romper al volver a guardar el
+    // formulario sin tocar el asesor.
+    const advisorLegacy = await createAdvisor(null);
+    const user = await createStudentUser();
+    const profile = await prisma.studentProfile.create({
+      data: {
+        userId: user.id,
+        studentCode: `code-${crypto.randomUUID()}`,
+        career: "Ingeniería en Sistemas",
+        processType: "TCU",
+        advisorId: advisorLegacy.id,
+      },
+    });
+    mockCoordination();
+
+    const org = await prisma.organization.create({ data: { name: "Org de prueba" } });
+    const formData = new FormData();
+    formData.set("studentProfileId", profile.id);
+    formData.set("advisorId", advisorLegacy.id);
+    formData.set("organizationId", org.id);
+
+    await expect(assignStudent(formData)).resolves.not.toThrow();
+  });
 });
 
 describe("createUser — exige tipo de proceso al crear un asesor", () => {

@@ -248,7 +248,11 @@ export async function assignStudent(formData: FormData) {
     );
   }
 
-  if (advisorId) {
+  // Solo se valida la especialidad cuando el asesor realmente cambia: una
+  // asignación ya existente (por ejemplo, de antes de esta regla) no debe
+  // romperse solo por volver a guardar el formulario sin tocar el asesor.
+  const advisorChanged = advisorId !== (current.advisorId ?? "");
+  if (advisorId && advisorChanged) {
     const advisor = await prisma.user.findUnique({ where: { id: advisorId } });
     if (!advisor || advisor.role !== ROLES.ADVISOR) {
       throw new Error("El usuario seleccionado no es un profesor asesor.");
