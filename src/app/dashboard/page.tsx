@@ -66,6 +66,16 @@ function processTone(status: string) {
   return "yellow" as const;
 }
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
 function Card({
   title,
   eyebrow,
@@ -709,48 +719,56 @@ async function CoordinationDashboard({
           )}
         </form>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-slate-400 text-xs font-semibold uppercase tracking-wide border-b border-slate-100">
-              <th className="py-2.5">Estudiante</th>
-              <th>Carrera</th>
-              <th>Proceso</th>
-              <th>Periodo</th>
-              <th>Asesor</th>
-              <th>Organización</th>
-              <th>Estado</th>
-              <th>Horas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((s) => {
-              const approved = s.hoursLogs.filter((h) => h.status === "APPROVED").reduce((a, h) => a + h.hours, 0);
-              return (
-                <tr key={s.id} className="border-b border-slate-50 hover:bg-[var(--accent-soft)]/40 transition-colors">
-                  <td className="py-3 font-medium text-slate-900">{s.user.name}</td>
-                  <td>{s.career}</td>
-                  <td>
-                    <ProcessTag type={s.processType} />
-                  </td>
-                  <td className="font-record text-slate-600">{s.period ?? "—"}</td>
-                  <td>{s.advisor?.name ?? "—"}</td>
-                  <td>{s.organization?.name ?? "—"}</td>
-                  <td>
-                    <StatusBadge label={PROCESS_STATUS_LABELS[s.status as ProcessStatus]} tone={processTone(s.status)} />
-                  </td>
-                  <td className="font-record">{approved} / {s.requiredHours} h</td>
-                </tr>
-              );
-            })}
-            {students.length === 0 && (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-slate-400">
-                  No hay expedientes que coincidan con el filtro.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+          {students.map((s) => {
+            const approved = s.hoursLogs.filter((h) => h.status === "APPROVED").reduce((a, h) => a + h.hours, 0);
+            return (
+              <div
+                key={s.id}
+                className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3.5 px-2 -mx-2 rounded-lg hover:bg-[var(--accent-soft)]/40 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold"
+                    style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}
+                    aria-hidden="true"
+                  >
+                    {initials(s.user.name)}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-900 text-sm truncate">{s.user.name}</p>
+                    <p className="text-xs text-slate-400 truncate">
+                      {s.career}
+                      {s.period ? ` · ${s.period}` : ""}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <ProcessTag type={s.processType} />
+                  <StatusBadge
+                    label={PROCESS_STATUS_LABELS[s.status as ProcessStatus]}
+                    tone={processTone(s.status)}
+                  />
+                </div>
+
+                <div className="text-right shrink-0 min-w-[10rem] max-w-full">
+                  <p className="text-xs text-slate-400 truncate">
+                    {s.advisor?.name ?? "Sin asesor"} · {s.organization?.name ?? "Sin organización"}
+                  </p>
+                  <p className="font-record text-sm text-slate-700">
+                    {approved} / {s.requiredHours} h
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+          {students.length === 0 && (
+            <p className="py-6 text-center text-sm text-slate-400">
+              No hay expedientes que coincidan con el filtro.
+            </p>
+          )}
+        </div>
       </Card>
       ),
     },
