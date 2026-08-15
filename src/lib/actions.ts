@@ -58,6 +58,22 @@ async function recomputeStatus(studentProfileId: string) {
   });
 }
 
+// El estudiante no puede iniciar (ni continuar) su proceso sin tener ya
+// asignados asesor y organización; ambos son prerrequisito, no solo uno.
+function requireAdvisorAndOrganization(studentProfile: {
+  advisorId: string | null;
+  organizationId: string | null;
+}) {
+  const missing: string[] = [];
+  if (!studentProfile.advisorId) missing.push("un profesor asesor");
+  if (!studentProfile.organizationId) missing.push("una organización");
+  if (missing.length > 0) {
+    throw new Error(
+      `No puedes iniciar tu proceso: falta que Coordinación te asigne ${missing.join(" y ")}.`
+    );
+  }
+}
+
 // ---------- Bitácora de horas ----------
 
 export async function logHours(formData: FormData) {
@@ -72,6 +88,7 @@ export async function logHours(formData: FormData) {
       "El proceso ya fue completado y aprobado. No se pueden registrar más horas."
     );
   }
+  requireAdvisorAndOrganization(studentProfile);
 
   const date = String(formData.get("date"));
   const hours = Number(formData.get("hours"));
@@ -148,6 +165,7 @@ export async function submitDeliverable(formData: FormData) {
       "El proceso ya fue completado y aprobado. No se pueden enviar más entregables."
     );
   }
+  requireAdvisorAndOrganization(studentProfile);
 
   const title = String(formData.get("title"));
   const description = String(formData.get("description") ?? "");
