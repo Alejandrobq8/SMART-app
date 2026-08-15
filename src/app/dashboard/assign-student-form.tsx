@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { assignStudent } from "@/lib/actions";
 import { PROCESS_STATUSES, PROCESS_TYPE_LABELS, type ProcessType } from "@/lib/constants";
 
@@ -15,13 +15,6 @@ type StudentOption = {
 type AdvisorOption = { id: string; name: string; processType: string | null };
 type SimpleOption = { id: string; name: string };
 
-// Al asignar, el servidor revalida /dashboard y el formulario se vuelve a
-// montar con sus valores por defecto (el primer estudiante de la lista),
-// no necesariamente el que se acababa de editar. Se guarda la última
-// selección en sessionStorage para restaurarla apenas el formulario vuelve
-// a aparecer, en vez de "saltar" a otro estudiante.
-const STORAGE_KEY = "smart-app:assign-student-selected-id";
-
 export default function AssignStudentForm({
   students,
   advisors,
@@ -31,23 +24,10 @@ export default function AssignStudentForm({
   advisors: AdvisorOption[];
   organizations: SimpleOption[];
 }) {
-  const [selectedId, setSelectedId] = useState(students[0]?.id ?? "");
-
-  useEffect(() => {
-    // Se sincroniza después del montaje (no en el valor inicial de useState)
-    // para no leer sessionStorage durante el render en el servidor, lo que
-    // rompería la hidratación si el valor guardado difiere del default SSR.
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (stored && students.some((s) => s.id === stored)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza con sessionStorage tras el montaje, no puede calcularse en el render
-      setSelectedId(stored);
-    }
-  }, [students]);
-
-  function selectStudent(id: string) {
-    setSelectedId(id);
-    sessionStorage.setItem(STORAGE_KEY, id);
-  }
+  // Sin estudiante preseleccionado: obliga a elegir explícitamente en vez
+  // de arrancar apuntando al primero de la lista (fácil de asignar por
+  // error a quien no corresponde).
+  const [selectedId, setSelectedId] = useState("");
 
   const selected = students.find((s) => s.id === selectedId);
   const orgLocked = !!selected && selected.status !== PROCESS_STATUSES.NOT_STARTED;
@@ -66,9 +46,12 @@ export default function AssignStudentForm({
           name="studentProfileId"
           required
           value={selectedId}
-          onChange={(e) => selectStudent(e.target.value)}
+          onChange={(e) => setSelectedId(e.target.value)}
           className="border border-slate-300 rounded-md px-2 py-1.5 text-sm"
         >
+          <option value="" disabled>
+            No seleccionado
+          </option>
           {students.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -87,7 +70,12 @@ export default function AssignStudentForm({
             </span>
           )}
         </label>
-        <select key={selectedId} name="advisorId" className="border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+        <select
+          key={selectedId}
+          name="advisorId"
+          disabled={!selected}
+          className="border border-slate-300 rounded-md px-2 py-1.5 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+        >
           <option value="">Sin asignar</option>
           {matchingAdvisors.map((a) => (
             <option key={a.id} value={a.id}>
@@ -122,8 +110,9 @@ export default function AssignStudentForm({
           <select
             key={selectedId}
             name="organizationId"
+            disabled={!selected}
             defaultValue={selected?.organizationId ?? ""}
-            className="border border-slate-300 rounded-md px-2 py-1.5 text-sm"
+            className="border border-slate-300 rounded-md px-2 py-1.5 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
           >
             <option value="">Sin asignar</option>
             {organizations.map((o) => (
@@ -135,7 +124,10 @@ export default function AssignStudentForm({
         )}
       </div>
 
-      <button className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800">
+      <button
+        disabled={!selected}
+        className="bg-slate-900 text-white text-sm rounded-md px-4 py-1.5 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed"
+      >
         Asignar
       </button>
     </form>
