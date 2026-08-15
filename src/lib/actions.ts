@@ -237,9 +237,14 @@ export async function assignStudent(formData: FormData) {
   const advisorId = String(formData.get("advisorId") ?? "");
   const organizationId = String(formData.get("organizationId") ?? "");
 
-  const current = await prisma.studentProfile.findUniqueOrThrow({
+  const current = await prisma.studentProfile.findUnique({
     where: { id: studentProfileId },
   });
+  if (!current) {
+    throw new Error(
+      "Este expediente ya no existe (pudo haber sido eliminado por otra persona). Recarga la página e intenta de nuevo."
+    );
+  }
 
   const organizationChanged = organizationId !== (current.organizationId ?? "");
   if (current.status !== PROCESS_STATUSES.NOT_STARTED && organizationChanged) {
